@@ -10,11 +10,18 @@ class Encoder:
         :param path: path to data file
         :return: TODO: think what format would be best(list of elements?)
         """
+        # Image is of numpy.ndarray type
         image = cv2.imread(path)
 
-        cv2.imshow("Test", image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        print(image.size)
+        input_data = []
+        for item in image.flat:
+            input_data.append(item)
+        print(len(input_data))
+
+        for i in range(0, len(input_data) - 3, 3):
+            if input_data[i] != input_data[i + 1] or input_data[i] != input_data[i + 2]:
+                print('fail')
 
     @staticmethod
     def calculate_frequencies(input_data, mode):
@@ -47,7 +54,7 @@ class Encoder:
 if __name__ == '__main__':
     print('main')
 
-    input_data = Encoder.read_data("test_data\\laplace_10.pgm")
+    input_data = Encoder.read_data("test_data\\geometr_05.pgm")
     frequency_dict = Encoder.calculate_frequencies(input_data, "1-value")
     encoded_data = Encoder.encode(input_data, frequency_dict, "1-value")
 

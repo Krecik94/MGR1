@@ -30,7 +30,19 @@ class Encoder:
         :param mode: 1-value 2-values of Markov
         :return: dict of frequencies (symbol -> frequency)
         """
-        pass
+        if mode == '1-value':
+            frequency_dict = {}
+            unique_values = set(input_data)
+            for value in unique_values:
+                frequency_dict[value] = input_data.count(value)
+            return frequency_dict
+
+        elif mode == '2-value':
+            pass
+        elif mode == 'Markov':
+            pass
+        else:
+            print('Wrong mode.')
 
     @staticmethod
     def encode(input_data, frequency_dictionary, mode):
@@ -52,12 +64,15 @@ class Encoder:
 # This test passes if module is called directly. If module is imported elsewhere this code won't be executed.
 if __name__ == '__main__':
 
-    path = 'test_data\\geometr_099.pgm'
+    path = 'test_data\\uniform.pgm'
     print('Reading data from path: {0}'.format(path))
     # Reading data. input_data will be a list of values
     input_data = Encoder.read_data(path)
 
+    # Creating frequency dict of symbols in input data
     frequency_dict = Encoder.calculate_frequencies(input_data, "1-value")
+    print (frequency_dict)
+
     encoded_data = Encoder.encode(input_data, frequency_dict, "1-value")
 
     if Encoder.decode(encoded_data, frequency_dict, "1-value") == input_data:

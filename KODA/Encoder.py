@@ -11,17 +11,16 @@ class Encoder:
         :return: TODO: think what format would be best(list of elements?)
         """
         # Image is of numpy.ndarray type
-        image = cv2.imread(path)
+        image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
 
-        print(image.size)
-        input_data = []
-        for item in image.flat:
-            input_data.append(item)
-        print(len(input_data))
+        print('Size of input image: {0}'.format(image.size))
 
-        for i in range(0, len(input_data) - 3, 3):
-            if input_data[i] != input_data[i + 1] or input_data[i] != input_data[i + 2]:
-                print('fail')
+        # List comprehension. Gathers all pixels from input data and forms a list.
+        input_data = [x for x in image.flat]
+
+        print('Size of data in list format: {0}'.format(len(input_data)))
+
+        return input_data
 
     @staticmethod
     def calculate_frequencies(input_data, mode):
@@ -52,9 +51,12 @@ class Encoder:
 
 # This test passes if module is called directly. If module is imported elsewhere this code won't be executed.
 if __name__ == '__main__':
-    print('main')
 
-    input_data = Encoder.read_data("test_data\\geometr_05.pgm")
+    path = 'test_data\\geometr_099.pgm'
+    print('Reading data from path: {0}'.format(path))
+    # Reading data. input_data will be a list of values
+    input_data = Encoder.read_data(path)
+
     frequency_dict = Encoder.calculate_frequencies(input_data, "1-value")
     encoded_data = Encoder.encode(input_data, frequency_dict, "1-value")
 

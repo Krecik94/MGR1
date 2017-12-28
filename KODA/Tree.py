@@ -2,7 +2,9 @@ import os
 import heapq
 import numpy
 import cv2
+from functools import total_ordering
 
+@total_ordering
 class HeapNode:
     def __init__(self, char, freq):
         self.char = char
@@ -10,7 +12,14 @@ class HeapNode:
         self.left = None
         self.right = None
 
-    def __cmp__(self, other):
+    def __eq__(self, other):
+        if other is None:
+            return -1
+        if not isinstance(other, HeapNode):
+            return -1
+        return self.freq == other.freq
+
+    def __gt__(self, other):
         if other is None:
             return -1
         if not isinstance(other, HeapNode):
@@ -66,25 +75,41 @@ class Tree:
         self.merge_nodes()
         self.start_create_codes()
 
-    def encode_text_1_value(self, text):
+    # def encode_text_1_value(self, text):
+    #     encoded_text = ""
+    #     byte_text = ""
+    #     for char in text:
+    #         byte_text += char
+    #         if len(byte_text) is 8:
+    #             encoded_text += self.compressed_codes[byte_text]
+    #             byte_text = ""
+    #     return encoded_text
+    #
+    # def decode_text_1_value(self, encoded_text):
+    #     text = ""
+    #     code = ""
+    #     for char in encoded_text:
+    #         code += char
+    #         if code in self.codes:
+    #             text += self.codes[code]
+    #             code = ""
+    #     return text
+
+    def encode_bytes_1_value(self, bytes):
         encoded_text = ""
-        byte_text = ""
-        for char in text:
-            byte_text += char
-            if len(byte_text) is 8:
-                encoded_text += self.compressed_codes[byte_text]
-                byte_text = ""
+        for val in bytes:
+            encoded_text += self.compressed_codes[val]
         return encoded_text
 
-    def decode_text_1_value(self, encoded_text):
-        text = ""
+    def decode_bytes_1_value(self, encoded_text):
+        decoded = []
         code = ""
         for char in encoded_text:
             code += char
             if code in self.codes:
-                text += self.codes[code]
+                decoded.append(self.codes[code])
                 code = ""
-        return text
+        return decoded
 
     def print_codes(self):
         for code in self.compressed_codes:

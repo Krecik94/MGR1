@@ -25,9 +25,9 @@ class Encoder:
     @staticmethod
     def calculate_frequencies(input_data, mode):
         """
-        Creates frequency dictionary base on input data and selected mode
+        Creates frequency dictionary based on input data and selected mode
         :param input_data:
-        :param mode: 1-value 2-values of Markov
+        :param mode: 1-value 2-values or Markov
         :return: dict of frequencies (symbol -> frequency)
         """
         if mode == '1-value':

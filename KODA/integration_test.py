@@ -3,7 +3,7 @@ from Tree import Tree
 import cv2
 import numpy as np
 
-MODE = "2-value"
+MODE = "Markov"
 
 path = 'test_data\\uniform.pgm'
 print('Reading data from path: {0}'.format(path))

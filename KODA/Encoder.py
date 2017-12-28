@@ -25,9 +25,9 @@ class Encoder:
     @staticmethod
     def calculate_frequencies(input_data, mode):
         """
-        Creates frequency dictionary base on input data and selected mode
+        Creates frequency dictionary based on input data and selected mode
         :param input_data:
-        :param mode: 1-value 2-values of Markov
+        :param mode: 1-value 2-values or Markov
         :return: dict of frequencies (symbol -> frequency)
         """
         if mode == '1-value':
@@ -55,7 +55,18 @@ class Encoder:
             return frequency_dict
 
         elif mode == 'Markov':
-            pass
+            frequency_dict = {}
+            # 1st element has nothing before it
+            frequency_dict[(None, input_data[1])] = 1
+            for i in range(1, len(input_data)):
+                data_tuple = (input_data[i - 1], input_data[i])
+                # Counting occurrences
+                if data_tuple in frequency_dict:
+                    frequency_dict[data_tuple] += 1
+                else:
+                    frequency_dict[data_tuple] = 1
+            return frequency_dict
+
         else:
             print('Wrong mode.')
 
@@ -83,12 +94,13 @@ class Encoder:
     @staticmethod
     def decode(input_data, decompress_dictionary, mode):
         """
-        Decodes data acording to selected mode
+        Decodes data according to selected mode
         :param input_data: the data to decompress
         :param decompress_dictionary: dictionary containing codes
         :param mode: 1-value, 2-value, Markov
         :return:
         """
+
         if mode == '1-value':
             decoded = []
             code = ""
@@ -109,6 +121,7 @@ class Encoder:
                     code = ""
             return decoded
         return
+
 # This test passes if module is called directly. If module is imported elsewhere this code won't be executed.
 if __name__ == '__main__':
     path = 'test_data\\uniform.pgm'
@@ -117,12 +130,12 @@ if __name__ == '__main__':
     input_data = Encoder.read_data(path)
 
     # Creating frequency dict of symbols in input data
-    frequency_dict = Encoder.calculate_frequencies(input_data, "2-value")
+    frequency_dict = Encoder.calculate_frequencies(input_data, "Markov")
     print(frequency_dict)
 
-    encoded_data = Encoder.encode(input_data, frequency_dict, "1-value")
+    #encoded_data = Encoder.encode(input_data, frequency_dict, "Markov")
 
-    if Encoder.decode(encoded_data, frequency_dict, "1-value") == input_data:
-        print('Success')
-    else:
-        print('No success')
+    #if Encoder.decode(encoded_data, frequency_dict, "Markov") == input_data:
+    #    print('Success')
+    #else:
+    #    print('No success')

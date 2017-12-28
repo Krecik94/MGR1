@@ -1,6 +1,7 @@
 import os
 import heapq
-
+import numpy
+import cv2
 
 class HeapNode:
     def __init__(self, char, freq):
@@ -43,10 +44,10 @@ class Tree:
         if parent is None:
             return
 
-        # lisc
+        # leaf
         if parent.char is not None:
-            self.codes[parent.char] = current_code
-            self.compressed_codes[current_code] = parent.char
+            self.codes[current_code] = parent.char
+            self.compressed_codes[parent.char] = current_code
             return
 
         self.create_code_recursive(parent.left, current_code + "0")
@@ -65,25 +66,51 @@ class Tree:
         self.merge_nodes()
         self.start_create_codes()
 
+    def encode_text_1_value(self, text):
+        encoded_text = ""
+        byte_text = ""
+        for char in text:
+            byte_text += char
+            if len(byte_text) is 8:
+                encoded_text += self.compressed_codes[byte_text]
+                byte_text = ""
+        return encoded_text
+
+    def decode_text_1_value(self, encoded_text):
+        text = ""
+        code = ""
+        for char in encoded_text:
+            code += char
+            if code in self.codes:
+                text += self.codes[code]
+                code = ""
+        return text
+
     def print_codes(self):
         for code in self.compressed_codes:
-            print("Compressed code {} Normal code {}\n".format(code, self.compressed_codes[code]))
+            print("Compressed code {} Normal code {}\n".format(self.compressed_codes[code], code))
 
 
 
 if __name__ == '__main__':
     HuffmanTree = Tree()
     freqencies = {}
-    freqencies["000"] = 50
-    freqencies["001"] = 40
-    freqencies["010"] = 20
-    freqencies["011"] = 10
-    freqencies["100"] = 6
-    freqencies["101"] = 5
-    freqencies["110"] = 2
-    freqencies["111"] = 1
+    freqencies["00000000"] = 50
+    freqencies["00000001"] = 40
+    freqencies["00000010"] = 20
+    freqencies["00000011"] = 10
+    freqencies["00000100"] = 6
+    freqencies["00000101"] = 5
+    freqencies["00000110"] = 2
+    freqencies["00000111"] = 1
     HuffmanTree.create_codes(freqencies)
     HuffmanTree.print_codes()
-
-
+    to_code = "000000000000000100000111"
+    encoded = HuffmanTree.encode_text_1_value(to_code)
+    print("Encoded:")
+    print(encoded)
+    print("----")
+    decoded = HuffmanTree.decode_text_1_value(encoded)
+    print("Decoded (original):")
+    print(decoded)
 

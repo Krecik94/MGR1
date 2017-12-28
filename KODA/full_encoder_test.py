@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 for path in glob.glob("test_data\\*.pgm"):
-    modes = ["1-value", "2-value"]
+    modes = ["1-value", "2-value", "Markov"]
     for mode in modes:
         print('Reading data from path: {0}, Using mode: {1}'.format(path, mode))
         start = time.time()

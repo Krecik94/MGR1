@@ -28,10 +28,10 @@ class HeapNode:
 
 
 class Tree:
-    def __init__(self, decompress_dictionary={}, compress_dictionary={}):
+    def __init__(self):
         self.heap = []
-        self.decompress_dictionary = decompress_dictionary
-        self.compress_dictionary = compress_dictionary
+        self.decompress_dictionary = {}
+        self.compress_dictionary = {}
 
     def _make_heap(self, dict_frequencies):
         for code in dict_frequencies:

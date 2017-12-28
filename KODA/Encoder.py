@@ -73,6 +73,11 @@ class Encoder:
             for val in input_data:
                 encoded_text += compress_dictionary[val]
             return encoded_text
+        if mode == '2-value':
+            encoded_text = ""
+            for iter in range(0, len(input_data), 2):
+                encoded_text += compress_dictionary[(input_data[iter],input_data[iter+1])]
+            return encoded_text
         return
 
     @staticmethod
@@ -84,15 +89,26 @@ class Encoder:
         :param mode: 1-value, 2-value, Markov
         :return:
         """
-        decoded = []
-        code = ""
-        for char in input_data:
-            code += char
-            if code in decompress_dictionary:
-                decoded.append(decompress_dictionary[code])
-                code = ""
-        return decoded
-
+        if mode == '1-value':
+            decoded = []
+            code = ""
+            for char in input_data:
+                code += char
+                if code in decompress_dictionary:
+                    decoded.append(decompress_dictionary[code])
+                    code = ""
+            return decoded
+        if mode == '2-value':
+            decoded = []
+            code = ""
+            for char in input_data:
+                code += char
+                if code in decompress_dictionary:
+                    decoded.append(decompress_dictionary[code][0])
+                    decoded.append(decompress_dictionary[code][1])
+                    code = ""
+            return decoded
+        return
 # This test passes if module is called directly. If module is imported elsewhere this code won't be executed.
 if __name__ == '__main__':
     path = 'test_data\\uniform.pgm'

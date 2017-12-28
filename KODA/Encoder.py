@@ -38,7 +38,22 @@ class Encoder:
             return frequency_dict
 
         elif mode == '2-value':
-            pass
+            frequency_dict = {}
+            # Iterating over input data elements 2 at a time, creating tuples.
+            # '//' is floor division
+            for i in range(0, len(input_data) // 2):
+                data_tuple = (input_data[2 * i], input_data[2 * i + 1])
+                # Counting occurrences
+                if data_tuple in frequency_dict:
+                    frequency_dict[data_tuple] += 1
+                else:
+                    frequency_dict[data_tuple] = 1
+            # Case when number of data elements in input data is odd
+            if len(input_data) % 2 == 1:
+                # [-1] takes last element of list
+                frequency_dict[input_data[-1], None] = 1
+            return frequency_dict
+
         elif mode == 'Markov':
             pass
         else:
@@ -80,15 +95,14 @@ class Encoder:
 
 # This test passes if module is called directly. If module is imported elsewhere this code won't be executed.
 if __name__ == '__main__':
-
     path = 'test_data\\uniform.pgm'
     print('Reading data from path: {0}'.format(path))
     # Reading data. input_data will be a list of values
     input_data = Encoder.read_data(path)
 
     # Creating frequency dict of symbols in input data
-    frequency_dict = Encoder.calculate_frequencies(input_data, "1-value")
-    print (frequency_dict)
+    frequency_dict = Encoder.calculate_frequencies(input_data, "2-value")
+    print(frequency_dict)
 
     encoded_data = Encoder.encode(input_data, frequency_dict, "1-value")
 

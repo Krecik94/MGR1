@@ -57,7 +57,7 @@ class Encoder:
         elif mode == 'Markov':
             frequency_dict = {}
             # 1st element has nothing before it
-            frequency_dict[(None, input_data[1])] = 1
+            frequency_dict[(None, input_data[0])] = 1
             for i in range(1, len(input_data)):
                 data_tuple = (input_data[i - 1], input_data[i])
                 # Counting occurrences
@@ -84,10 +84,18 @@ class Encoder:
             for val in input_data:
                 encoded_text += compress_dictionary[val]
             return encoded_text
-        if mode == '2-value':
+        elif mode == '2-value':
             encoded_text = ""
             for iter in range(0, len(input_data), 2):
                 encoded_text += compress_dictionary[(input_data[iter],input_data[iter+1])]
+            return encoded_text
+        elif mode == 'Markov':
+            encoded_text = ""
+            for iter in range(len(input_data)):
+                if iter == 0:
+                    encoded_text += compress_dictionary[(None, input_data[iter])]
+                else:
+                    encoded_text += compress_dictionary[(input_data[iter-1], input_data[iter])]
             return encoded_text
         return
 
@@ -110,13 +118,22 @@ class Encoder:
                     decoded.append(decompress_dictionary[code])
                     code = ""
             return decoded
-        if mode == '2-value':
+        elif mode == '2-value':
             decoded = []
             code = ""
             for char in input_data:
                 code += char
                 if code in decompress_dictionary:
                     decoded.append(decompress_dictionary[code][0])
+                    decoded.append(decompress_dictionary[code][1])
+                    code = ""
+            return decoded
+        elif mode == 'Markov':
+            decoded = []
+            code = ""
+            for char in input_data:
+                code += char
+                if code in decompress_dictionary:
                     decoded.append(decompress_dictionary[code][1])
                     code = ""
             return decoded

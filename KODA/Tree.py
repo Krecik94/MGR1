@@ -33,12 +33,12 @@ class Tree:
         self.decompress_dictionary = decompress_dictionary
         self.compress_dictionary = compress_dictionary
 
-    def make_heap(self, dict_frequencies):
+    def _make_heap(self, dict_frequencies):
         for code in dict_frequencies:
             new_node = HeapNode(code, dict_frequencies[code])
             heapq.heappush(self.heap, new_node)
 
-    def merge_nodes(self):
+    def _merge_nodes(self):
         while len(self.heap) > 1:
             left_node = heapq.heappop(self.heap)
             right_node = heapq.heappop(self.heap)
@@ -49,7 +49,7 @@ class Tree:
 
             heapq.heappush(self.heap, merged_node)
 
-    def create_code_recursive(self, parent, current_code):
+    def _create_code_recursive(self, parent, current_code):
         if parent is None:
             return
 
@@ -59,16 +59,16 @@ class Tree:
             self.compress_dictionary[parent.char] = current_code
             return
 
-        self.create_code_recursive(parent.left, current_code + "0")
-        self.create_code_recursive(parent.right, current_code + "1")
+        self._create_code_recursive(parent.left, current_code + "0")
+        self._create_code_recursive(parent.right, current_code + "1")
 
-    def start_create_codes(self):
+    def _start_create_codes(self):
         if len(self.heap) > 1:
             print("Something is wrong")
 
         root = heapq.heappop(self.heap)
         code = ""
-        self.create_code_recursive(root, code)
+        self._create_code_recursive(root, code)
 
     def create_codes(self, dict_freqencies):
         """
@@ -76,9 +76,9 @@ class Tree:
         :param dict_freqencies:
         :return:
         """
-        self.make_heap(dict_freqencies)
-        self.merge_nodes()
-        self.start_create_codes()
+        self._make_heap(dict_freqencies)
+        self._merge_nodes()
+        self._start_create_codes()
 
         return (self.compress_dictionary, self.decompress_dictionary)
 

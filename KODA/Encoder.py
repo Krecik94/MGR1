@@ -60,21 +60,38 @@ class Encoder:
             print('Wrong mode.')
 
     @staticmethod
-    def encode(input_data, frequency_dictionary, mode):
+    def encode(input_data, compress_dictionary, mode):
         """
         Encodes data according to selected mode
         :param mode: 1-value 2-values of Markov
-        :param input_data:
-        :param frequency_dictionary:
-        :return: encoded data
+        :param input_data: the data to compress
+        :param compress_dictionary: dictionary containing codes
+        :return: encoded data: string containing encoded data, None if invalid mode
         """
-        pass
+        if mode == '1-value':
+            encoded_text = ""
+            for val in input_data:
+                encoded_text += compress_dictionary[val]
+            return encoded_text
+        return
 
     @staticmethod
-    def decode(input_data, frequency_dictionary, mode):
-        # Same as encode(), but other way around
-        pass
-
+    def decode(input_data, decompress_dictionary, mode):
+        """
+        Decodes data acording to selected mode
+        :param input_data: the data to decompress
+        :param decompress_dictionary: dictionary containing codes
+        :param mode: 1-value, 2-value, Markov
+        :return:
+        """
+        decoded = []
+        code = ""
+        for char in input_data:
+            code += char
+            if code in decompress_dictionary:
+                decoded.append(decompress_dictionary[code])
+                code = ""
+        return decoded
 
 # This test passes if module is called directly. If module is imported elsewhere this code won't be executed.
 if __name__ == '__main__':

@@ -28,17 +28,17 @@ class HeapNode:
 
 
 class Tree:
-    def __init__(self, codes={}, compressed_codes={}):
+    def __init__(self, decompress_dictionary={}, compress_dictionary={}):
         self.heap = []
-        self.codes = codes
-        self.compressed_codes = compressed_codes
+        self.decompress_dictionary = decompress_dictionary
+        self.compress_dictionary = compress_dictionary
 
-    def make_heap(self, dict_frequencies):
+    def _make_heap(self, dict_frequencies):
         for code in dict_frequencies:
             new_node = HeapNode(code, dict_frequencies[code])
             heapq.heappush(self.heap, new_node)
 
-    def merge_nodes(self):
+    def _merge_nodes(self):
         while len(self.heap) > 1:
             left_node = heapq.heappop(self.heap)
             right_node = heapq.heappop(self.heap)
@@ -49,71 +49,42 @@ class Tree:
 
             heapq.heappush(self.heap, merged_node)
 
-    def create_code_recursive(self, parent, current_code):
+    def _create_code_recursive(self, parent, current_code):
         if parent is None:
             return
 
         # leaf
         if parent.char is not None:
-            self.codes[current_code] = parent.char
-            self.compressed_codes[parent.char] = current_code
+            self.decompress_dictionary[current_code] = parent.char
+            self.compress_dictionary[parent.char] = current_code
             return
 
-        self.create_code_recursive(parent.left, current_code + "0")
-        self.create_code_recursive(parent.right, current_code + "1")
+        self._create_code_recursive(parent.left, current_code + "0")
+        self._create_code_recursive(parent.right, current_code + "1")
 
-    def start_create_codes(self):
+    def _start_create_codes(self):
         if len(self.heap) > 1:
             print("Something is wrong")
 
         root = heapq.heappop(self.heap)
         code = ""
-        self.create_code_recursive(root, code)
+        self._create_code_recursive(root, code)
 
     def create_codes(self, dict_freqencies):
-        self.make_heap(dict_freqencies)
-        self.merge_nodes()
-        self.start_create_codes()
+        """
+        Returns Tuple with 2 dictionaries. First
+        :param dict_freqencies:
+        :return:
+        """
+        self._make_heap(dict_freqencies)
+        self._merge_nodes()
+        self._start_create_codes()
 
-    # def encode_text_1_value(self, text):
-    #     encoded_text = ""
-    #     byte_text = ""
-    #     for char in text:
-    #         byte_text += char
-    #         if len(byte_text) is 8:
-    #             encoded_text += self.compressed_codes[byte_text]
-    #             byte_text = ""
-    #     return encoded_text
-    #
-    # def decode_text_1_value(self, encoded_text):
-    #     text = ""
-    #     code = ""
-    #     for char in encoded_text:
-    #         code += char
-    #         if code in self.codes:
-    #             text += self.codes[code]
-    #             code = ""
-    #     return text
-
-    def encode_bytes_1_value(self, bytes):
-        encoded_text = ""
-        for val in bytes:
-            encoded_text += self.compressed_codes[val]
-        return encoded_text
-
-    def decode_bytes_1_value(self, encoded_text):
-        decoded = []
-        code = ""
-        for char in encoded_text:
-            code += char
-            if code in self.codes:
-                decoded.append(self.codes[code])
-                code = ""
-        return decoded
+        return (self.compress_dictionary, self.decompress_dictionary)
 
     def print_codes(self):
-        for code in self.compressed_codes:
-            print("Compressed code {} Normal code {}\n".format(self.compressed_codes[code], code))
+        for code in self.compress_dictionary:
+            print("Compressed code {} Normal code {}\n".format(self.compress_dictionary[code], code))
 
 
 
@@ -131,11 +102,11 @@ if __name__ == '__main__':
     HuffmanTree.create_codes(freqencies)
     HuffmanTree.print_codes()
     to_code = "000000000000000100000111"
-    encoded = HuffmanTree.encode_text_1_value(to_code)
+    encoded = HuffmanTree.encode_bytes_1_value(to_code)
     print("Encoded:")
     print(encoded)
     print("----")
-    decoded = HuffmanTree.decode_text_1_value(encoded)
+    decoded = HuffmanTree.decode_bytes_1_value(encoded)
     print("Decoded (original):")
     print(decoded)
 

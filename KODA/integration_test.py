@@ -14,14 +14,14 @@ print(frequency_dict)
 
 HuffmanTree = Tree()
 
-HuffmanTree.create_codes(frequency_dict)
+(compressDictionary, decompressDictionary) = HuffmanTree.create_codes(frequency_dict)
 HuffmanTree.print_codes()
 to_code = input_data
-encoded = HuffmanTree.encode_bytes_1_value(to_code)
+encoded = Encoder.encode(to_code, compressDictionary, '1-value')
 print("Encoded:")
 print(encoded)
 print("----")
-decoded = HuffmanTree.decode_bytes_1_value(encoded)
+decoded = Encoder.decode(encoded, decompressDictionary, '1-value')
 print("Decoded (original):")
 print(decoded)
 

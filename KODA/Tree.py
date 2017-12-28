@@ -91,22 +91,15 @@ class Tree:
 if __name__ == '__main__':
     HuffmanTree = Tree()
     freqencies = {}
-    freqencies["00000000"] = 50
-    freqencies["00000001"] = 40
-    freqencies["00000010"] = 20
-    freqencies["00000011"] = 10
-    freqencies["00000100"] = 6
-    freqencies["00000101"] = 5
-    freqencies["00000110"] = 2
-    freqencies["00000111"] = 1
+    freqencies[1] = 50
+    freqencies[23] = 40
+    freqencies[44] = 20
+    freqencies[15] = 10
+    freqencies[90] = 6
+    freqencies[244] = 5
+    freqencies[234] = 2
+    freqencies[255] = 1
     HuffmanTree.create_codes(freqencies)
     HuffmanTree.print_codes()
-    to_code = "000000000000000100000111"
-    encoded = HuffmanTree.encode_bytes_1_value(to_code)
-    print("Encoded:")
-    print(encoded)
-    print("----")
-    decoded = HuffmanTree.decode_bytes_1_value(encoded)
-    print("Decoded (original):")
-    print(decoded)
+
 

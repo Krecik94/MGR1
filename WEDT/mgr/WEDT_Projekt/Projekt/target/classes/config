@@ -1,0 +1,14 @@
+//architektura warstw ukrytych: VANILLA lub VANILLA_MULTI_H
+rnnArchitecture = VANILLA
+//architektura lancucha: LINEAR lub DEPENDENCY_TREE
+chainArchitecture = LINEAR
+//liczba iteracji algorytmu L-BFGS
+iterations = 20
+//dlugosc wektorow slow
+hiddenSize = 50
+//sciezka do danych trenujacych i testowych
+dataPath = data/task2/semeval/images2
+//sciezka do pliku wektorow slow
+embeddingsPath = data/collobert/embeddings
+//ilosc neuronow w warstwie wyjsciowej
+catSize = 7

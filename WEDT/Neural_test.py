@@ -8,13 +8,20 @@ n_nodes_hl3 = 500
 n_classes = 10
 batch_size = 100
 
-x = tf.placeholder('float', [None, 784])
+x = tf.placeholder('float', [None, 784]) #each picture in input data is 784 values
 y = tf.placeholder('float')
 
-"""
-Fuction creating neural network model
-"""
 def neural_network_model(data):
+    """
+    Fuction creating neural network model
+    :param data: neural network input data
+    :return: neural network output
+    """
+
+    """
+    Definition of weights and biases in each node in layer.
+    At start they are defined as random
+    """
     hidden_1_layer = {'weights':tf.Variable(tf.random_normal([784, n_nodes_hl1])),
                       'biases':tf.Variable(tf.random_normal([n_nodes_hl1]))}
 
@@ -27,6 +34,9 @@ def neural_network_model(data):
     output_layer = {'weights':tf.Variable(tf.random_normal([n_nodes_hl3, n_classes])),
                     'biases':tf.Variable(tf.random_normal([n_classes]))}
 
+    """
+    Definition of nodes in layers
+    """
     l1 = tf.add(tf.matmul(data,hidden_1_layer['weights']), hidden_1_layer['biases'])
     l1 = tf.nn.relu(l1)
 
@@ -42,6 +52,11 @@ def neural_network_model(data):
 
 
 def train_neural_network(x):
+    """
+    Training neural network
+    :param x: Placeholder for input data (???)
+    :return: none
+    """
     prediction = neural_network_model(x)
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=prediction, labels=y))
     optimizer = tf.train.AdamOptimizer().minimize(cost)

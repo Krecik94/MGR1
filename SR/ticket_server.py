@@ -2,19 +2,19 @@ from http.server import SimpleHTTPRequestHandler, HTTPServer
 import threading
 import time
 
-""""
-Test handler that returns requestline
-After launching the server call localhost:8000 in browser to test if it's working
-"""
-
 
 class AirportSupervisor:
-    def __init__(self, port, ID):
+    def __init__(self, airport_ID, ticket_quantities):
         # server instance
         # "" means to listen on all available interfaces
-        data_manager = TicketDataManager(ID)
+        data_manager = TicketDataManager(airport_ID, ticket_quantities)
         handler_class = make_handler_class_from_argv(data_manager)
-        self.http_server = HTTPServer(("", port), handler_class)
+
+        # Check if airport ID is defined in dict.
+        if airport_ID in data_manager.airport_ID_to_port_map:
+            self.http_server = HTTPServer(("", data_manager.airport_ID_to_port_map[airport_ID]), handler_class)
+        else:
+            raise Exception("Airport ID not found")
 
         # server thread, for easier cleanup
         self.server_thread = threading.Thread(target=self.http_server.serve_forever)
@@ -48,11 +48,18 @@ class TicketDataManager:
         'Ticket7': 'AirportD',
     }
 
-    def __init__(self, ID):
+    def __init__(self, ID, ticket_quantities):
         self.ID = ID
+        self.ticket_quantities = ticket_quantities
 
 
 def make_handler_class_from_argv(data_manager):
+    """
+    Class factory.
+    :param data_manager: data manager to inject into resulting request handler class
+    :return: Request handler class with data manager injected into it
+    """
+
     class TicketServerRequestHandler(SimpleHTTPRequestHandler):
 
         def __init__(self, *args, **kwargs):
@@ -77,13 +84,17 @@ def make_handler_class_from_argv(data_manager):
     return TicketServerRequestHandler
 
 
-def main(port, ID, ticket_quantities):
-    test = AirportSupervisor(port, ID)
+def main(airport_ID, ticket_quantities):
+    airport_supervisor = AirportSupervisor(airport_ID, ticket_quantities)
 
-    test.start_server()
+    airport_supervisor.start_server()
     # time.sleep(4)
     # test.stop_server()
 
 
 if __name__ == "__main__":
-    main(8000, "test_param", None)
+    ticket_quantities_dict = {
+        'Ticket0': 1,
+        'Ticket1': 1
+    }
+    main('AirportA', "test_param", ticket_quantities_dict)

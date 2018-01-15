@@ -1,4 +1,5 @@
 import tensorflow as tf
+import re
 from gensim.models import word2vec
 import numpy as np
 
@@ -9,17 +10,25 @@ input_file = open("Data/STS/Train_data/STS.input.images.txt", "r")
 gs_file = open("Data/STS/Train_data/STS.gs.images.txt", "r")
 
 #sentences = word2vec.Text8Corpus('text8')
-#w2v = word2vec.Word2Vec(sentences, size=200)
+w2v = word2vec.KeyedVectors.load_word2vec_format('deps.words')#word2vec.Word2Vec(sentences, size=200)#
+
+#w2v.wv.save_word2vec_format('test')
+
+#Regex for taking out special characters
+regex = re.compile('[^a-zA-Z]')
 
 for line in input_file:
     if line != "\n":
         val = line.split("\t")
         tmp1 = []
         tmp2 = []
-        for x in val[0].split(" "):
-            tmp1.append(sum(ord(ch) for ch in x))
-        for x in val[1].split(" "):
-            tmp2.append(sum(ord(ch) for ch in x))
+        split = re.split('\s|-', val[1])
+        for x in re.split('\s|-', val[0]):  #.split(" "):
+            if regex.sub('', x.lower()) != '':
+                tmp1.append(w2v.wv[regex.sub('', x.lower())])
+        for x in re.split('\s|-', val[1]):  #.split(" "):
+            if regex.sub('', x.lower()) != '':
+                tmp2.append(w2v.wv[regex.sub('', x.lower())])
         input_data1.append(tmp1)
         input_data2.append(tmp2)
 for line in gs_file:

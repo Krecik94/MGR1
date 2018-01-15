@@ -1,5 +1,6 @@
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 import threading
+import json
 import time
 
 
@@ -7,6 +8,7 @@ class AirportSupervisor:
     def __init__(self, airport_ID, ticket_quantities):
         # server instance
         # "" means to listen on all available interfaces
+        print('Creating supervisor. Airport_ID: {0}\nTicket_quantities: {1}'.format(airport_ID, ticket_quantities))
         data_manager = TicketDataManager(airport_ID, ticket_quantities)
         handler_class = make_handler_class_from_argv(data_manager)
 
@@ -51,6 +53,16 @@ class TicketDataManager:
     def __init__(self, ID, ticket_quantities):
         self.ID = ID
         self.ticket_quantities = ticket_quantities
+        my_ticket_list = []
+
+        for key, value in self.ticket_ID_to_airport_ID_map.items():
+            if value == ID:
+                my_ticket_list.append(key)
+                print(key)
+
+        self.ticket_reserved_to_transaction_list_map = {x: [] for x in my_ticket_list}
+        self.ticket_completed_to_transaction_list_map = {x: [] for x in my_ticket_list}
+        self.registered_transactions = []
 
 
 def make_handler_class_from_argv(data_manager):
@@ -66,20 +78,26 @@ def make_handler_class_from_argv(data_manager):
             self.data_manager = data_manager
             super(TicketServerRequestHandler, self).__init__(*args, **kwargs)
 
-        def do_method(self, caller_method_name):
-            print(caller_method_name)
+        # POST method override
+        def do_POST(self):
+            content_length = 0
+            for header in self.headers:
+                if header == 'Content-Length':
+                    content_length = int(self.headers[header])
+            print(content_length)
+            received_bytes = self.rfile.read(content_length)
+            decoded_object = json.loads(received_bytes)
+            print(decoded_object)
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write('POST accepted'.encode())
+
+        # GET method override
+        def do_GET(self):
             self.data_manager.ID += '1'
             self.send_response(200)
             self.end_headers()
             self.wfile.write(self.data_manager.ID.encode())
-
-        # POST method override
-        def do_POST(self):
-            self.do_method("POST")
-
-        # GET method override
-        def do_GET(self):
-            self.do_method("GET")
 
     return TicketServerRequestHandler
 

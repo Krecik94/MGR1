@@ -46,3 +46,6 @@ class Transaction:
 
         # Transaction status, should be REGISTERED unless constructed in special circumstances
         self.status = status
+
+        # Timestamp to keep track of client activity. Used to detect disconnects
+        self.last_ping_timestamp = None

@@ -11,11 +11,11 @@ def create_m2v_model(pathList):
     if len(pathList) > 0:
         for path in pathList:
             for line in open(path, 'r'):
-                sentence = line.split(' ')
+                sentence = line.lower().split(' ')
                 sentence[len(sentence)-1] = newLineRegex.sub('', sentence[len(sentence)-1])
                 sentences.append(sentence)
 
-        w2v = word2vec.Word2Vec(sentences)
+        w2v = word2vec.Word2Vec(sentences, min_count=1)
 
         return w2v
 

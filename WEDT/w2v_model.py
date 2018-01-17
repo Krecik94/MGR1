@@ -21,5 +21,13 @@ def create_m2v_model(pathList):
 
 
 if __name__ == '__main__':
-    create_m2v_model(['Data/ISTS/test_data_w_fold_standard/STSint.input.headlines.sent1.txt',
-                     'Data/ISTS/test_data_w_fold_standard/STSint.input.headlines.sent2.txt'])
+    model = create_m2v_model(['Data/ISTS/test_data_w_fold_standard/STSint.input.headlines.sent1.txt',
+                                    'Data/ISTS/test_data_w_fold_standard/STSint.input.headlines.sent2.txt',
+                                    'Data/ISTS/test_data_w_fold_standard/STSint.input.images.sent1.txt',
+                                    'Data/ISTS/test_data_w_fold_standard/STSint.input.images.sent2.txt',
+                                    'Data/ISTS/Train_data/STSint.input.headlines.sent1.txt',
+                                    'Data/ISTS/Train_data/STSint.input.headlines.sent2.txt',
+                                    'Data/ISTS/Train_data/STSint.input.images.sent1.txt',
+                                    'Data/ISTS/Train_data/STSint.input.images.sent2.txt'])
+
+    model.wv.save_word2vec_format('test')

@@ -12,7 +12,11 @@ result = tf.placeholder(tf.float32)  # target values
 model = w2v_model.create_m2v_model(['Data/ISTS/test_data_w_fold_standard/STSint.input.headlines.sent1.txt',
                                     'Data/ISTS/test_data_w_fold_standard/STSint.input.headlines.sent2.txt',
                                     'Data/ISTS/test_data_w_fold_standard/STSint.input.images.sent1.txt',
-                                    'Data/ISTS/test_data_w_fold_standard/STSint.input.images.sent2.txt'])
+                                    'Data/ISTS/test_data_w_fold_standard/STSint.input.images.sent2.txt',
+                                    'Data/ISTS/Train_data/STSint.input.headlines.sent1.txt',
+                                    'Data/ISTS/Train_data/STSint.input.headlines.sent2.txt',
+                                    'Data/ISTS/Train_data/STSint.input.images.sent1.txt',
+                                    'Data/ISTS/Train_data/STSint.input.images.sent2.txt'])
 
 
 def main():
@@ -96,13 +100,18 @@ def train_neural_network(sentence_1, sentence_2):
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=prediction, labels=result))
     #cost = tf.reduce_mean(-tf.reduce_sum(tf.multiply(result, tf.log(tf.nn.softmax(logits=prediction) + 1e-10))))
     #cost = test_cost(prediction,result)
-    optimizer = tf.train.GradientDescentOptimizer(0.05).minimize(cost)  # GradientDescentOptimizer(1.0).minimize(cost)
+    optimizer = tf.train.GradientDescentOptimizer(0.02).minimize(cost)  # GradientDescentOptimizer(1.0).minimize(cost)
 
-    sentence_pairs = input_parser.parse_input('Data\\ISTS\\test_data_w_fold_standard\\STSint.gs.images.wa')
+    sentence_pairs = input_parser.parse_input('Data\\ISTS\\Train_data\\STSint.gs.images.wa')
 
-    hm_epochs = 40
+    sentence_pairs_test = input_parser.parse_input('Data\\ISTS\\test_data_w_fold_standard\\STSint.gs.images.wa')
+
+    hm_epochs = 10000
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
+
+        Precision = 0.0
+        Recall = 0.0
 
         first_test_input = np.zeros(100)
         second_test_input = np.zeros(100)
@@ -117,6 +126,9 @@ def train_neural_network(sentence_1, sentence_2):
         #print(sess.run(cost, feed_dict={sentence_1: first_test_input, sentence_2: second_test_input, result: result_test_output}))
 
         #print(prediction.eval({sentence_1: first_test_input, sentence_2: second_test_input}))
+
+        hit = 0
+        miss = 0
 
         for epoch in range(hm_epochs):
             epoch_loss = 0
@@ -167,28 +179,92 @@ def train_neural_network(sentence_1, sentence_2):
 
                     #print(sess.run(tf.log(tf.nn.softmax(logits=prediction)), feed_dict={sentence_1: first_input, sentence_2: second_input}))
 
-                    if epoch > 38:
-                        print('prediction: ', sess.run(prediction,
-                                                      feed_dict={sentence_1: first_input, sentence_2: second_input}),
-                              output)
+                    if epoch > hm_epochs-2:
+                        out = sess.run(prediction, feed_dict={sentence_1: first_input, sentence_2: second_input})
+                        if(np.unravel_index(out.argmax(), out.shape)[1] ==
+                              np.unravel_index(output.argmax(), output.shape)[0]):
+                              hit = hit+1
+                        else:
+                            miss = miss+1
+                        #print('prediction: ', np.unravel_index(out.argmax(), out.shape)[1] ==
+                        #      np.unravel_index(output.argmax(), output.shape)[0])
 
-                    #print(sess.run(cost,feed_dict={sentence_1: first_input, sentence_2: second_input, result: output}))
+                    # print(sess.run(cost,feed_dict={sentence_1: first_input, sentence_2: second_input, result: output}))
 
 
-                    #print(prediction.eval({sentence_1: first_input, sentence_2: second_input}))
+                    # print(prediction.eval({sentence_1: first_input, sentence_2: second_input}))
                     epoch_loss += c
 
+            if epoch > hm_epochs-2:
+                print('Precision: ', hit, '/', hit+miss, ' = ', hit/(hit+miss))
+                Precision = hit/(miss+hit)
             print('Epoch', epoch, 'completed out of', hm_epochs, 'loss:', epoch_loss)
-        correct = tf.equal(prediction, result)
-        accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
 
-        first_test_input = np.zeros(100)
-        second_test_input = np.zeros(100)
+        hit = 0
+        miss = 0
 
-        first_test_input.shape = (1, first_test_input.shape[0])
-        second_test_input.shape = (1, second_test_input.shape[0])
+        for sentence_pair in sentence_pairs_test:
+            for single_alignment in sentence_pair.alignment:
+                first_index_list = single_alignment.first_phrase.split(' ')
+                first_input = np.zeros(100)
+                if first_index_list[0] != '0':
+                    first_word_list = [sentence_pair.source[x] for x in first_index_list]
+                    # print(first_word_list)
+                    for word in first_word_list:
+                        first_input = np.add(first_input, model.wv[word.lower()])
+                    # print(first_input)
 
-        print('Out: ', sess.run(prediction,  feed_dict={sentence_1: first_test_input, sentence_2: second_test_input}))
+                second_index_list = single_alignment.second_phrase.split(' ')
+                second_input = np.zeros(100)
+                if second_index_list[0] != '0':
+                    second_word_list = [sentence_pair.translation[x] for x in second_index_list]
+                    # print(second_word_list)
+                    for word in second_word_list:
+                        second_input = np.add(second_input, model.wv[word.lower()])
+                    # print(second_input)
+
+                output = np.zeros(7)
+                if single_alignment.match == 'NIL':
+                    output[0] = 1
+                elif single_alignment.match == '0':
+                    output[1] = 1
+                elif single_alignment.match == '1':
+                    output[2] = 1
+                elif single_alignment.match == '2':
+                    output[3] = 1
+                elif single_alignment.match == '3':
+                    output[4] = 1
+                elif single_alignment.match == '4':
+                    output[5] = 1
+                elif single_alignment.match == '5':
+                    output[6] = 1
+
+                first_input.shape = (1, first_input.shape[0])
+                second_input.shape = (1, second_input.shape[0])
+
+                out = prediction.eval(feed_dict={sentence_1: first_input, sentence_2: second_input})
+                if(np.unravel_index(out.argmax(), out.shape)[1] ==
+                        np.unravel_index(output.argmax(), output.shape)[0]):
+                    hit = hit+1
+                else:
+                    miss = miss+1
+                # print('prediction: ', np.unravel_index(out.argmax(), out.shape)[1] ==
+                #       np.unravel_index(output.argmax(), output.shape)[0])
+
+        print('Recall: ', hit, '/', hit+miss, ' = ', hit/(hit+miss))
+        Recall = hit/(miss+hit)
+
+        F = 2 * (Precision*Recall)/(Precision+Recall)
+
+        print('F: ', F)
+
+        # first_test_input = np.zeros(100)
+        # second_test_input = np.zeros(100)
+        #
+        # first_test_input.shape = (1, first_test_input.shape[0])
+        # second_test_input.shape = (1, second_test_input.shape[0])
+        #
+        # print('Out: ', sess.run(prediction,  feed_dict={sentence_1: first_test_input, sentence_2: second_test_input}))
 
         '''for i in range(5):
             

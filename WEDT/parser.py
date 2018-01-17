@@ -22,7 +22,7 @@ class Sentence_pair:
         self.alignment = []
 
 
-def parse_input():
+def parse_input(path):
     sentence_pairs = []
 
     sentence_id_pattern = re.compile('sentence id="(\d*)')
@@ -33,7 +33,8 @@ def parse_input():
     end_of_translation = re.compile('</translation>')
     end_of_alignment = re.compile('</alignment>')
 
-    with open('Data\\ISTS\\test_data_w_fold_standard\\STSint.gs.images.wa', 'r') as f:
+    #with open('Data\\ISTS\\test_data_w_fold_standard\\STSint.gs.images.wa', 'r') as f:
+    with open(path, 'r') as f:
         while True:
 
             line = f.readline()

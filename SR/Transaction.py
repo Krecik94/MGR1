@@ -1,5 +1,7 @@
 from enum import Enum
 
+import datetime
+
 
 class TransactionStatus(Enum):
     # Initial state of transaction.
@@ -48,4 +50,12 @@ class Transaction:
         self.status = status
 
         # Timestamp to keep track of client activity. Used to detect disconnects
-        self.last_ping_timestamp = None
+        self.last_ping_timestamp = datetime.datetime.now()
+
+    def __str__(self):
+        return_string = "\nID: {0}\n".format(self.ID)
+        return_string += "Ticket list: {0}\n".format(self.ticket_ID_list)
+        return_string += "Home server: {0}\n".format(self.home_server_ID)
+        return_string += "Status: {0}\n".format(self.status)
+        return_string += "Last ping:\n\n".format(self.last_ping_timestamp)
+        return return_string

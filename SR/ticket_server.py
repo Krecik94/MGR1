@@ -2,7 +2,12 @@ from http.server import SimpleHTTPRequestHandler, HTTPServer
 import threading
 import json
 import time
+from socketserver import ThreadingMixIn
 
+from Transaction import Transaction
+
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    """Handle requests in a separate thread."""
 
 class AirportSupervisor:
     def __init__(self, airport_ID, ticket_quantities):
@@ -14,7 +19,7 @@ class AirportSupervisor:
 
         # Check if airport ID is defined in dict.
         if airport_ID in data_manager.airport_ID_to_port_map:
-            self.http_server = HTTPServer(("", data_manager.airport_ID_to_port_map[airport_ID]), handler_class)
+            self.http_server = ThreadedHTTPServer(("", data_manager.airport_ID_to_port_map[airport_ID]), handler_class)
         else:
             raise Exception("Airport ID not found")
 
@@ -63,6 +68,8 @@ class TicketDataManager:
         self.ticket_reserved_to_transaction_list_map = {x: [] for x in my_ticket_list}
         self.ticket_completed_to_transaction_list_map = {x: [] for x in my_ticket_list}
         self.registered_transactions = []
+        self.registered_transactions.append(
+            Transaction(ID="Transakcja testowa", ticket_ID_list=[], home_server_ID=self.ID))
 
 
 def make_handler_class_from_argv(data_manager):
@@ -78,26 +85,40 @@ def make_handler_class_from_argv(data_manager):
             self.data_manager = data_manager
             super(TicketServerRequestHandler, self).__init__(*args, **kwargs)
 
-        # POST method override
+        # POST method override, used to communicate with servers / clients
         def do_POST(self):
+            print('received POST')
             content_length = 0
             for header in self.headers:
                 if header == 'Content-Length':
                     content_length = int(self.headers[header])
             print(content_length)
-            received_bytes = self.rfile.read(content_length)
-            decoded_object = json.loads(received_bytes)
-            print(decoded_object)
+            received_data = self.rfile.read(content_length)
+
+            if self.path == '/register_transaction':
+                self.register_transaction(received_data)
+
+            # decoded_object = json.loads(received_bytes)
+            # print(decoded_object)
             self.send_response(200)
             self.end_headers()
             self.wfile.write('POST accepted'.encode())
 
-        # GET method override
+        # GET method overrid, used to print data through browser
         def do_GET(self):
-            self.data_manager.ID += '1'
             self.send_response(200)
             self.end_headers()
-            self.wfile.write(self.data_manager.ID.encode())
+            return_string = 'Dane serwera {0}\n'.format(data_manager.ID)
+            for transaction in self.data_manager.registered_transactions:
+                return_string += str(transaction)
+            self.wfile.write(return_string.encode())
+
+        def register_transaction(self, received_data):
+            received_json = json.loads(received_data)
+            incoming_transaction = Transaction(ID=received_json['transaction_ID'],
+                                              ticket_ID_list=received_json['required_tickets'],
+                                              home_server_ID=self.data_manager.ID)
+            self.data_manager.registered_transactions.append(incoming_transaction)
 
     return TicketServerRequestHandler
 

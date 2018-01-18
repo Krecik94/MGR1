@@ -7,7 +7,7 @@ class TransactionStatus(Enum):
     # Initial state of transaction.
     REGISTERED = 1
 
-    # State after all reservationr requests have been sent out
+    # State after all reservation requests have been sent out
     PENDING_RESERVATION = 2
 
     # State after all reservations have been confirmed
@@ -57,5 +57,5 @@ class Transaction:
         return_string += "Ticket list: {0}\n".format(self.ticket_ID_list)
         return_string += "Home server: {0}\n".format(self.home_server_ID)
         return_string += "Status: {0}\n".format(self.status)
-        return_string += "Last ping:\n\n".format(self.last_ping_timestamp)
+        return_string += "Last ping: {0}\n\n".format(self.last_ping_timestamp)
         return return_string

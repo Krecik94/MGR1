@@ -6,32 +6,46 @@ from socketserver import ThreadingMixIn
 
 from Transaction import Transaction
 
+
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """Handle requests in a separate thread."""
+
 
 class AirportSupervisor:
     def __init__(self, airport_ID, ticket_quantities):
         # server instance
         # "" means to listen on all available interfaces
         print('Creating supervisor. Airport_ID: {0}\nTicket_quantities: {1}'.format(airport_ID, ticket_quantities))
-        data_manager = TicketDataManager(airport_ID, ticket_quantities)
-        handler_class = make_handler_class_from_argv(data_manager)
+        self.data_manager = TicketDataManager(airport_ID, ticket_quantities)
+        self.handler_class = make_handler_class_from_argv(self.data_manager)
 
         # Check if airport ID is defined in dict.
-        if airport_ID in data_manager.airport_ID_to_port_map:
-            self.http_server = ThreadedHTTPServer(("", data_manager.airport_ID_to_port_map[airport_ID]), handler_class)
+        if airport_ID in self.data_manager.airport_ID_to_port_map:
+            self.http_server = ThreadedHTTPServer(('', self.data_manager.airport_ID_to_port_map[airport_ID]), self.handler_class)
         else:
             raise Exception("Airport ID not found")
+        self.should_shutdown = False
+
 
         # server thread, for easier cleanup
         self.server_thread = threading.Thread(target=self.http_server.serve_forever)
 
     def start_server(self):
         self.server_thread.start()
+        self.should_shutdown = False
+        self.handle_requests_until_shutdown()
 
     def stop_server(self):
+        self.should_shutdown = True
         self.http_server.shutdown()
         self.server_thread.join()
+
+    def handle_requests_until_shutdown(self):
+        while not self.should_shutdown:
+            for transaction in self.data_manager.registered_transactions:
+                #print(transaction.ID)
+                time.sleep(2)
+
 
 
 class TicketDataManager:
@@ -68,8 +82,6 @@ class TicketDataManager:
         self.ticket_reserved_to_transaction_list_map = {x: [] for x in my_ticket_list}
         self.ticket_completed_to_transaction_list_map = {x: [] for x in my_ticket_list}
         self.registered_transactions = []
-        self.registered_transactions.append(
-            Transaction(ID="Transakcja testowa", ticket_ID_list=[], home_server_ID=self.ID))
 
 
 def make_handler_class_from_argv(data_manager):
@@ -104,7 +116,7 @@ def make_handler_class_from_argv(data_manager):
             self.end_headers()
             self.wfile.write('POST accepted'.encode())
 
-        # GET method overrid, used to print data through browser
+        # GET method override, used to print data through browser
         def do_GET(self):
             self.send_response(200)
             self.end_headers()
@@ -116,8 +128,8 @@ def make_handler_class_from_argv(data_manager):
         def register_transaction(self, received_data):
             received_json = json.loads(received_data)
             incoming_transaction = Transaction(ID=received_json['transaction_ID'],
-                                              ticket_ID_list=received_json['required_tickets'],
-                                              home_server_ID=self.data_manager.ID)
+                                               ticket_ID_list=received_json['required_tickets'],
+                                               home_server_ID=self.data_manager.ID)
             self.data_manager.registered_transactions.append(incoming_transaction)
 
     return TicketServerRequestHandler

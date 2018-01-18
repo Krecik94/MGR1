@@ -1,3 +1,4 @@
+import datetime
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 import threading
 import json
@@ -5,6 +6,7 @@ import time
 from socketserver import ThreadingMixIn
 
 from Transaction import Transaction
+from Transaction import TransactionStatus
 
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
@@ -21,11 +23,11 @@ class AirportSupervisor:
 
         # Check if airport ID is defined in dict.
         if airport_ID in self.data_manager.airport_ID_to_port_map:
-            self.http_server = ThreadedHTTPServer(('', self.data_manager.airport_ID_to_port_map[airport_ID]), self.handler_class)
+            self.http_server = ThreadedHTTPServer(('', self.data_manager.airport_ID_to_port_map[airport_ID]),
+                                                  self.handler_class)
         else:
             raise Exception("Airport ID not found")
         self.should_shutdown = False
-
 
         # server thread, for easier cleanup
         self.server_thread = threading.Thread(target=self.http_server.serve_forever)
@@ -40,12 +42,116 @@ class AirportSupervisor:
         self.http_server.shutdown()
         self.server_thread.join()
 
+    # Loop that iterates over all transactions and handles them accordingly
     def handle_requests_until_shutdown(self):
         while not self.should_shutdown:
             for transaction in self.data_manager.registered_transactions:
-                #print(transaction.ID)
+                # print(transaction.ID)
+                if transaction.status == TransactionStatus.REGISTERED:
+                    self.handle_registered_transaction(transaction)
                 time.sleep(2)
 
+    def handle_registered_transaction(self, transaction):
+        # Setting transaction status to let outer loop know it is being processed
+        transaction.status = TransactionStatus.PENDING_RESERVATION
+
+        # Extracting tickets that belong to local server
+        local_tickets = list(set(transaction.ticket_ID_list) & set(self.data_manager.my_ticket_list))
+
+        # Extracting tickets that need to be acquired from remote servers
+        remote_tickets = [ticket for ticket in transaction.ticket_ID_list if ticket not in local_tickets]
+
+        # Counting if local server has enough tickets START
+        has_enough_local_tickets = True
+        for local_ticket in local_tickets:
+            reserved_tickets = len(self.data_manager.ticket_reserved_to_transaction_list_map[local_ticket])
+            purchased_tickets = len(self.data_manager.ticket_completed_to_transaction_list_map[local_ticket])
+            # Doesn't work with deadlocks TODO FIX THIS
+            if reserved_tickets + purchased_tickets >= self.data_manager.ticket_quantities[local_ticket]:
+                has_enough_local_tickets = False
+        # Counting if local server has enough tickets END
+
+        # Reserving local tickets
+        if has_enough_local_tickets:
+            for local_ticket in local_tickets:
+                # reserving local tickets
+                self.data_manager.ticket_reserved_to_transaction_list_map[local_ticket].append(transaction)
+            transaction.status = TransactionStatus.RESERVED
+        else:
+            # Case when there is not enough local tickets
+            transaction.status = TransactionStatus.OUT_OF_TICKETS
+            return
+
+        # Case when there is no tickets to be acquired remotely, jump straight to completion
+        if len(remote_tickets) == 0:
+            for local_ticket in local_tickets:
+                self.data_manager.ticket_reserved_to_transaction_list_map[local_ticket].remove(transaction)
+                self.data_manager.ticket_completed_to_transaction_list_map[local_ticket].append(transaction)
+            transaction.status = TransactionStatus.COMPLETED
+            return
+
+
+        # Reserving remote tickets
+        # No need for 'else' since if there are no remote tickets the method will return
+        successfully_reserved_remote_tickets = []
+        for remote_ticket in remote_tickets:
+            result = self.contact_remote_server('reserve', remote_tickets)
+            # Case when ticket was reserved successfully
+            if result == 'success':
+                successfully_reserved_remote_tickets.append(remote_ticket)
+
+            # Case when ticket could not be reserved, aborting
+            else:
+                transaction.status = TransactionStatus.ERROR
+                for local_ticket in local_tickets:
+                    self.data_manager.ticket_reserved_to_transaction_list_map[local_ticket].remove(transaction)
+
+                for remote_ticket in successfully_reserved_remote_tickets:
+                    self.contact_remote_server('abort', remote_tickets)
+                return
+
+        # All tickets are reserved
+        transaction.status = TransactionStatus.RESERVED
+
+        # Committing all tickets
+        # Committing local tickets
+        for local_ticket in local_tickets:
+            # Removing from reserved list
+            self.data_manager.ticket_reserved_to_transaction_list_map[local_ticket].remove(transaction)
+            # Adding to completed list
+            self.data_manager.ticket_completed_to_transaction_list_map[local_ticket].append(transaction)
+
+        # Committing remote tickets
+        successfully_committed_remote_tickets = []
+        for remote_ticket in remote_tickets:
+            result = self.contact_remote_server('commit', remote_tickets)
+            # Case when ticket was reserved successfully
+            if result == 'success':
+                successfully_committed_remote_tickets.append(remote_ticket)
+
+            # Case when ticket could not be committed, aborting
+            else:
+                transaction.status = TransactionStatus.ERROR
+                for local_ticket in local_tickets:
+                    self.data_manager.ticket_completed_to_transaction_list_map[local_ticket].remove(transaction)
+
+                for remote_ticket in successfully_reserved_remote_tickets:
+                    self.contact_remote_server('abort', remote_tickets)
+                return
+
+        transaction.status = TransactionStatus.COMPLETED
+
+    # IMPLEMENT THIS
+    def contact_remote_server(self, action, ticket_ID):
+        return 'fail'
+
+
+    '''
+    TODO: 
+    - obsługa rezerwacji i comita po stronie serwera
+    - wysyłka rezerwacji i comita do remota
+    - deadlock
+    '''
 
 
 class TicketDataManager:
@@ -72,15 +178,15 @@ class TicketDataManager:
     def __init__(self, ID, ticket_quantities):
         self.ID = ID
         self.ticket_quantities = ticket_quantities
-        my_ticket_list = []
+        self.my_ticket_list = []
 
         for key, value in self.ticket_ID_to_airport_ID_map.items():
             if value == ID:
-                my_ticket_list.append(key)
+                self.my_ticket_list.append(key)
                 print(key)
 
-        self.ticket_reserved_to_transaction_list_map = {x: [] for x in my_ticket_list}
-        self.ticket_completed_to_transaction_list_map = {x: [] for x in my_ticket_list}
+        self.ticket_reserved_to_transaction_list_map = {x: [] for x in self.my_ticket_list}
+        self.ticket_completed_to_transaction_list_map = {x: [] for x in self.my_ticket_list}
         self.registered_transactions = []
 
 
@@ -106,23 +212,31 @@ def make_handler_class_from_argv(data_manager):
                     content_length = int(self.headers[header])
             print(content_length)
             received_data = self.rfile.read(content_length)
-
+            return_message = 'POST accepted'
             if self.path == '/register_transaction':
-                self.register_transaction(received_data)
+                return_message = self.register_transaction(received_data)
+            elif self.path == '/ping':
+                return_message = self.ping(received_data)
 
             # decoded_object = json.loads(received_bytes)
             # print(decoded_object)
             self.send_response(200)
             self.end_headers()
-            self.wfile.write('POST accepted'.encode())
+            self.wfile.write(return_message.encode())
 
         # GET method override, used to print data through browser
         def do_GET(self):
             self.send_response(200)
             self.end_headers()
             return_string = 'Dane serwera {0}\n'.format(data_manager.ID)
+            return_string = 'Zarejestrowane transakcje:\n'
             for transaction in self.data_manager.registered_transactions:
                 return_string += str(transaction)
+            return_string += '\nZarezerwowane bilety:\n'
+            return_string += str(self.data_manager.ticket_reserved_to_transaction_list_map)
+            return_string += '\nKupione bilety:\n'
+            return_string += str(self.data_manager.ticket_completed_to_transaction_list_map)
+
             self.wfile.write(return_string.encode())
 
         def register_transaction(self, received_data):
@@ -131,6 +245,18 @@ def make_handler_class_from_argv(data_manager):
                                                ticket_ID_list=received_json['required_tickets'],
                                                home_server_ID=self.data_manager.ID)
             self.data_manager.registered_transactions.append(incoming_transaction)
+            return 'Registration complete'
+
+        def ping(self, received_data):
+            received_json = json.loads(received_data)
+            pinged_transaction = next(transaction for transaction in self.data_manager.registered_transactions if
+                                      transaction.ID == received_json['transaction_ID'])
+            pinged_transaction.last_ping_timestamp = datetime.datetime.now()
+
+            if pinged_transaction.status == TransactionStatus.COMPLETED:
+                pinged_transaction.status = TransactionStatus.ACKNOWLEDGED
+
+            return str(pinged_transaction.status)
 
     return TicketServerRequestHandler
 

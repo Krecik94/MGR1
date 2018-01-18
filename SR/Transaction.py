@@ -13,9 +13,6 @@ class TransactionStatus(Enum):
     # State after all reservations have been confirmed
     RESERVED = 3
 
-    # State after all confirmation messages have been sent out
-    PENDING_COMPLETION = 4
-
     # State after all confirmations have been completed with success - transaction finished
     COMPLETED = 5
 
@@ -27,6 +24,9 @@ class TransactionStatus(Enum):
 
     # Something went wrong, rollback
     ERROR = 8
+
+    # When transaction was completed but client never found out and disconnected. Abort transaction.
+    ACKNOWLEDGED = 9
 
 
 class Transaction:

@@ -2,8 +2,14 @@ import urllib.request
 import json
 import uuid
 
-import sys
 
+'''
+TODO:
+- rezerwacja biletów po otrzymaniu transakcji
+- finalizacja transakcji
+- obsługa pingów
+- obsługa deadlocków
+'''
 
 def main():
     # Creating request object with servers URL

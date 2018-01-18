@@ -1,12 +1,25 @@
 import urllib.request
 import json
+import uuid
+
+import sys
+
 
 def main():
-    request_to_send = urllib.request.Request('http://localhost:8000/doesnt_matter?what/goes:here')
-    # Uncomment to generate POST request
-    # request_to_send.data = "test".encode()
-    test={'a':['test', 'test1'], 'b':'test2'}
-    request_to_send.data = json.dumps(test).encode()
+    # Creating request object with servers URL
+    request_to_send = urllib.request.Request('http://localhost:8000/register_transaction')
+
+    # Preparing data of the request
+    # UUID4 ot ensure no collisions
+    transaction_ID = str(uuid.uuid4())
+    requried_tickets = ["Ticket0", "Ticket5"]
+    data_to_json = {"transaction_ID": transaction_ID,
+                    "required_tickets": requried_tickets
+                    }
+
+    print(json.dumps(data_to_json))
+    encoded_data = json.dumps(data_to_json).encode()
+    request_to_send.data = json.dumps(data_to_json).encode()
     with urllib.request.urlopen(request_to_send) as response:
         print(response.read().decode())
 

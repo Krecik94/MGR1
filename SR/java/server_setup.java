@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 class server_setup {
@@ -9,6 +11,8 @@ class server_setup {
     static Map<String, Integer> airport_d_ticket_quantity_dict = new HashMap<>();
 
     static Map<String, Map<String, Integer>> airport_data = new HashMap<>();
+
+    static List<TicketServer> serverList = new ArrayList<TicketServer>(){};
 
     private static void fillMaps() {
         airport_a_ticket_quantity_dict.put("Ticket0", 8);
@@ -36,9 +40,12 @@ class server_setup {
 
             Integer startPort = 8000;
             int i = 0;
+            TicketServer t;
             for (Map.Entry<String, Map<String, Integer>> entry : airport_data.entrySet())
             {
-                ticket_server.run(entry.getKey(), entry.getValue(), startPort + i);
+                t = new TicketServer(entry.getKey(), entry.getValue(), startPort + i);
+                t.run();
+                serverList.add(t);
                 ++i;
             }
         }

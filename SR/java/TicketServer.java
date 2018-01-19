@@ -7,15 +7,20 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
-public class ticket_server {
+public class TicketServer {
 
     private String airport_ID;
     private TicketDataManager dataManager;
-    //private Map<String, Integer>
+    private Map<String, Integer> airport_data;
+    int port;
 
-    public void run(String airport_ID, Map<String, Integer> airport_data, int port) throws Exception {
+    TicketServer(String airport_ID, Map<String, Integer> airport_data, int port) {
         this.airport_ID = airport_ID;
+        this.airport_data = airport_data;
         this.dataManager = new TicketDataManager(airport_ID, airport_data);
+    }
+
+    public void run() throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/test", createHandler(this.dataManager));
         server.setExecutor(null); // creates a default executor

@@ -5,28 +5,28 @@ import datetime
 
 class TransactionStatus(Enum):
     # Initial state of transaction.
-    REGISTERED = 1
+    REGISTERED = 0
 
     # State after all reservation requests have been sent out
-    PENDING_RESERVATION = 2
+    PENDING_RESERVATION = 1
 
     # State after all reservations have been confirmed
-    RESERVED = 3
+    RESERVED = 2
 
     # State after all confirmations have been completed with success - transaction finished
-    COMPLETED = 5
+    COMPLETED = 3
 
     # Transaction rejected because it was causing a deadlock
-    DEADLOCKED = 6
+    DEADLOCKED = 4
 
     # There are no more tickets available for the transaction to purchase
-    OUT_OF_TICKETS = 7
+    OUT_OF_TICKETS = 5
 
     # Something went wrong, rollback
-    ERROR = 8
+    ERROR = 6
 
     # When transaction was completed but client never found out and disconnected. Abort transaction.
-    ACKNOWLEDGED = 9
+    ACKNOWLEDGED = 7
 
 
 class Transaction:

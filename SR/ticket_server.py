@@ -228,14 +228,23 @@ def make_handler_class_from_argv(data_manager):
         def do_GET(self):
             self.send_response(200)
             self.end_headers()
-            return_string = 'Dane serwera {0}\n'.format(data_manager.ID)
-            return_string = 'Zarejestrowane transakcje:\n'
+            return_string = None
+            return_string = '<html><body><pre>Dane serwera {0}\n'.format(data_manager.ID)
+            return_string += 'Zarejestrowane transakcje:\n<hr>'
             for transaction in self.data_manager.registered_transactions:
                 return_string += str(transaction)
+                return_string += '<hr/>'
             return_string += '\nZarezerwowane bilety:\n'
-            return_string += str(self.data_manager.ticket_reserved_to_transaction_list_map)
-            return_string += '\nKupione bilety:\n'
-            return_string += str(self.data_manager.ticket_completed_to_transaction_list_map)
+            for ticket_ID in self.data_manager.ticket_reserved_to_transaction_list_map.keys():
+                return_string += '\n{0}:'.format(ticket_ID)
+                for transaction in self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID]:
+                    return_string += '\n{0}'.format(transaction.ID)
+            return_string += '\n<hr>Kupione bilety:\n'
+            for ticket_ID in self.data_manager.ticket_completed_to_transaction_list_map.keys():
+                return_string += '\n{0}:'.format(ticket_ID)
+                for transaction in self.data_manager.ticket_completed_to_transaction_list_map[ticket_ID]:
+                    return_string += '\n{0}'.format(transaction.ID)
+            return_string += '</pre></body></html>'
 
             self.wfile.write(return_string.encode())
 

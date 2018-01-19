@@ -28,6 +28,9 @@ class TransactionStatus(Enum):
     # When transaction was completed but client never found out and disconnected. Abort transaction.
     ACKNOWLEDGED = 7
 
+    # For remote transactions
+    REMOTE = 10
+
 
 class Transaction:
     """

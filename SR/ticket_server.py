@@ -95,7 +95,7 @@ class AirportSupervisor:
         # No need for 'else' since if there are no remote tickets the method will return
         successfully_reserved_remote_tickets = []
         for remote_ticket in remote_tickets:
-            result = self.contact_remote_server('reserve', remote_tickets)
+            result = self.contact_remote_server('reserve', remote_ticket, transaction)
             # Case when ticket was reserved successfully
             if result == 'success':
                 successfully_reserved_remote_tickets.append(remote_ticket)
@@ -107,7 +107,7 @@ class AirportSupervisor:
                     self.data_manager.ticket_reserved_to_transaction_list_map[local_ticket].remove(transaction)
 
                 for remote_ticket in successfully_reserved_remote_tickets:
-                    self.contact_remote_server('abort', remote_ticket)
+                    self.contact_remote_server('abort', remote_ticket, transaction)
                 return
 
         # All tickets are reserved
@@ -124,7 +124,7 @@ class AirportSupervisor:
         # Committing remote tickets
         successfully_committed_remote_tickets = []
         for remote_ticket in remote_tickets:
-            result = self.contact_remote_server('commit', remote_tickets)
+            result = self.contact_remote_server('commit', remote_ticket, transaction)
             # Case when ticket was reserved successfully
             if result == 'success':
                 successfully_committed_remote_tickets.append(remote_ticket)

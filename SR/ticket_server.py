@@ -1,4 +1,6 @@
 import datetime
+import urllib.request
+import uuid
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 import threading
 import json
@@ -90,7 +92,6 @@ class AirportSupervisor:
             transaction.status = TransactionStatus.COMPLETED
             return
 
-
         # Reserving remote tickets
         # No need for 'else' since if there are no remote tickets the method will return
         successfully_reserved_remote_tickets = []
@@ -136,15 +137,43 @@ class AirportSupervisor:
                     self.data_manager.ticket_completed_to_transaction_list_map[local_ticket].remove(transaction)
 
                 for remote_ticket in successfully_reserved_remote_tickets:
-                    self.contact_remote_server('abort', remote_tickets)
+                    self.contact_remote_server('abort', remote_ticket, transaction)
                 return
 
         transaction.status = TransactionStatus.COMPLETED
 
     # IMPLEMENT THIS
-    def contact_remote_server(self, action, ticket_ID):
-        return 'fail'
+    def contact_remote_server(self, action, ticket_ID, transaction):
 
+        airpot_ID = self.data_manager.ticket_ID_to_airport_ID_map[ticket_ID]
+        port = self.data_manager.airport_ID_to_port_map[airpot_ID]
+        print(port)
+
+        print('Contacting {0} with {1}'.format(airpot_ID,action))
+
+        request_to_send = urllib.request.Request('http://localhost:{0}/{1}'.format(port, action))
+
+        # Preparing data of the request
+        # UUID4 ot ensure no collisions
+        ticket_ID_json = ticket_ID
+        owning_transaction_ID = transaction.ID
+        transaction_home_server_ID = transaction.home_server_ID
+        data_to_json = {'ticket_ID_json': ticket_ID_json,
+                        'owning_transaction_ID': owning_transaction_ID,
+                        'transaction_home_server_ID': transaction_home_server_ID
+                        }
+
+        print(json.dumps(data_to_json))
+        encoded_data = json.dumps(data_to_json).encode()
+        request_to_send.data = encoded_data
+        received_response = None
+        with urllib.request.urlopen(request_to_send) as response:
+            received_response = response.read().decode()
+
+        print("Received: {0}".format(received_response))
+
+        if received_response == 'SUCCESS':
+            return 'success'
 
     '''
     TODO: 
@@ -217,6 +246,10 @@ def make_handler_class_from_argv(data_manager):
                 return_message = self.register_transaction(received_data)
             elif self.path == '/ping':
                 return_message = self.ping(received_data)
+            elif self.path == '/reserve':
+                return_message = self.reserve_ticket(received_data)
+            elif self.path == '/commit':
+                return_message = self.commit_ticket(received_data)
 
             # decoded_object = json.loads(received_bytes)
             # print(decoded_object)
@@ -258,14 +291,61 @@ def make_handler_class_from_argv(data_manager):
 
         def ping(self, received_data):
             received_json = json.loads(received_data)
-            pinged_transaction = next(transaction for transaction in self.data_manager.registered_transactions if
-                                      transaction.ID == received_json['transaction_ID'])
+            pinged_transaction = next((transaction for transaction in self.data_manager.registered_transactions if
+                                      transaction.ID == received_json['transaction_ID']), None)
+            if pinged_transaction is None:
+                return 'Invalid transaction ID'
             pinged_transaction.last_ping_timestamp = datetime.datetime.now()
 
             if pinged_transaction.status == TransactionStatus.COMPLETED:
                 pinged_transaction.status = TransactionStatus.ACKNOWLEDGED
 
             return str(pinged_transaction.status)
+
+        def reserve_ticket(self, received_data):
+            received_json = json.loads(received_data)
+            ticket_ID_json = received_json['ticket_ID_json']
+            owning_transaction_ID = received_json['owning_transaction_ID']
+            transaction_home_server_ID = received_json['transaction_home_server_ID']
+            print('Reserving ticket {0} for {1}'.format(ticket_ID_json,transaction_home_server_ID))
+
+            if ticket_ID_json not in self.data_manager.my_ticket_list:
+                return 'WRONG_SERVER'
+            reserved_tickets = len(self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json])
+            purchased_tickets = len(self.data_manager.ticket_completed_to_transaction_list_map[ticket_ID_json])
+            if purchased_tickets >= self.data_manager.ticket_quantities[ticket_ID_json]:
+                return 'SOLD_OUT'
+            if purchased_tickets + reserved_tickets >= self.data_manager.ticket_quantities[ticket_ID_json]:
+                return 'ALL_RESERVED'
+            self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json].append(
+                Transaction(ID=owning_transaction_ID,
+                            ticket_ID_list=[],
+                            home_server_ID=transaction_home_server_ID,
+                            status=TransactionStatus.REMOTE))
+            return 'SUCCESS'
+
+        def commit_ticket(self, received_data):
+            received_json = json.loads(received_data)
+            ticket_ID_json = received_json['ticket_ID_json']
+            owning_transaction_ID = received_json['owning_transaction_ID']
+            transaction_home_server_ID = received_json['transaction_home_server_ID']
+            print('Commiting ticket {0} for {1}'.format(ticket_ID_json, transaction_home_server_ID))
+
+            if ticket_ID_json not in self.data_manager.my_ticket_list:
+                return 'WRONG_SERVER'
+
+            print(owning_transaction_ID)
+            print(self.data_manager.ticket_reserved_to_transaction_list_map[
+                ticket_ID_json])
+            existing_transaction = next((transaction for transaction in
+                                        self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json]
+                                        if transaction.ID == owning_transaction_ID), None)
+            if existing_transaction is None:
+                return 'NOT_RESERVED'
+
+            self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json].remove(existing_transaction)
+            self.data_manager.ticket_completed_to_transaction_list_map[ticket_ID_json].append(existing_transaction)
+            return 'SUCCESS'
 
     return TicketServerRequestHandler
 

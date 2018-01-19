@@ -250,6 +250,8 @@ def make_handler_class_from_argv(data_manager):
                 return_message = self.reserve_ticket(received_data)
             elif self.path == '/commit':
                 return_message = self.commit_ticket(received_data)
+            elif self.path == '/abort':
+                return_message = self.abort_ticket(received_data)
 
             # decoded_object = json.loads(received_bytes)
             # print(decoded_object)
@@ -345,6 +347,26 @@ def make_handler_class_from_argv(data_manager):
 
             self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json].remove(existing_transaction)
             self.data_manager.ticket_completed_to_transaction_list_map[ticket_ID_json].append(existing_transaction)
+            return 'SUCCESS'
+
+        def abort_ticket(self,received_data):
+            received_json = json.loads(received_data)
+            ticket_ID_json = received_json['ticket_ID_json']
+            owning_transaction_ID = received_json['owning_transaction_ID']
+            transaction_home_server_ID = received_json['transaction_home_server_ID']
+            print('Aborting ticket {0} for {1}, transaction {2}'.format(ticket_ID_json, transaction_home_server_ID, owning_transaction_ID))
+            check_if_reserved = next((transaction for transaction in
+                                         self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json]
+                                         if transaction.ID == owning_transaction_ID), None)
+            if check_if_reserved is not None:
+                self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json].remove(check_if_reserved)
+
+            check_if_committed = next((transaction for transaction in
+                                      self.data_manager.ticket_completed_to_transaction_list_map[ticket_ID_json]
+                                      if transaction.ID == owning_transaction_ID), None)
+            if check_if_committed is not None:
+                self.data_manager.ticket_completed_to_transaction_list_map[ticket_ID_json].remove(check_if_committed)
+
             return 'SUCCESS'
 
     return TicketServerRequestHandler

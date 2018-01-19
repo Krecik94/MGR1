@@ -20,7 +20,7 @@ def main():
     # Preparing data of the request
     # UUID4 ot ensure no collisions
     transaction_ID = str(uuid.uuid4())
-    requried_tickets = ["Ticket0", "Ticket5", 'Ticket1']
+    requried_tickets = ["Ticket0", "Ticket5", 'Ticket1', 'Ticket7']
     data_to_json = {"transaction_ID": transaction_ID,
                     "required_tickets": requried_tickets
                     }
@@ -41,7 +41,6 @@ def main():
             if received_response_string in ['TransactionStatus.ACKNOWLEDGED', 'TransactionStatus.DEADLOCKED',
                                             'TransactionStatus.OUT_OF_TICKETS', 'TransactionStatus.ERROR']:
                 break
-
 
         time.sleep(5)
 

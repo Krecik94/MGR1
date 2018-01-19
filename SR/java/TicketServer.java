@@ -12,18 +12,33 @@ public class TicketServer {
     private String airport_ID;
     private TicketDataManager dataManager;
     private Map<String, Integer> airport_data;
-    int port;
+    HttpServer server;
 
-    TicketServer(String airport_ID, Map<String, Integer> airport_data, int port) {
+    Boolean should_shutdown;
+
+    TicketServer(String airport_ID, Map<String, Integer> airport_data) throws Exception {
+        System.out.print("Creating supervisor. Airport_ID: " + airport_ID + "\nTicket_quantities: " + airport_data + "\n");
+
         this.airport_ID = airport_ID;
         this.airport_data = airport_data;
         this.dataManager = new TicketDataManager(airport_ID, airport_data);
+        HttpHandler handler = createHandler(this.dataManager);
+
+        // Check if airport ID is defined in dict.
+        if (this.dataManager.airport_ID_to_port_map.containsKey(this.airport_ID)) {
+            this.server = HttpServer.create(
+                    new InetSocketAddress(this.dataManager.airport_ID_to_port_map.get(this.airport_ID)), 0);
+            server.createContext("/", handler);
+            server.setExecutor(null); // creates a default executor
+        }
+        else {
+            throw new Exception ("Airport ID not found");
+        }
+
+        this.should_shutdown = false;
     }
 
     public void run() throws Exception {
-        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
-        server.createContext("/test", createHandler(this.dataManager));
-        server.setExecutor(null); // creates a default executor
         server.start();
     }
 

@@ -7,7 +7,7 @@ public class TicketDataManager {
 
     String ID;
 
-    Map<String, Integer> aiport_ID_to_port_map = new HashMap<String, Integer>(){};
+    Map<String, Integer> airport_ID_to_port_map = new HashMap<String, Integer>(){};
     Map<String, String> ticket_ID_to_airport_ID_map = new HashMap<String, String>(){};
 
     Map<String, TransactionStatus[]> ticket_reserved_to_transaction_list_map = new HashMap<String, TransactionStatus[]>(){};
@@ -37,10 +37,10 @@ public class TicketDataManager {
 
     private void fillMaps() {
         // Hardcoded information about which airport listens on what port
-        aiport_ID_to_port_map.put("AirportA", 8000);
-        aiport_ID_to_port_map.put("AirportB", 8001);
-        aiport_ID_to_port_map.put("AirportC", 8002);
-        aiport_ID_to_port_map.put("AirportD", 8003);
+        airport_ID_to_port_map.put("AirportA", 8010);
+        airport_ID_to_port_map.put("AirportB", 8011);
+        airport_ID_to_port_map.put("AirportC", 8012);
+        airport_ID_to_port_map.put("AirportD", 8013);
 
         // Hardcoded information about which airport handles which tickets
         ticket_ID_to_airport_ID_map.put("Ticket0", "AirportA");

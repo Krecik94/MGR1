@@ -38,15 +38,12 @@ class server_setup {
         try {
             fillMaps();
 
-            Integer startPort = 8000;
-            int i = 0;
             TicketServer t;
             for (Map.Entry<String, Map<String, Integer>> entry : airport_data.entrySet())
             {
-                t = new TicketServer(entry.getKey(), entry.getValue(), startPort + i);
+                t = new TicketServer(entry.getKey(), entry.getValue());
                 t.run();
                 serverList.add(t);
-                ++i;
             }
         }
         catch (Exception e) {

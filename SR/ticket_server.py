@@ -107,7 +107,7 @@ class AirportSupervisor:
                     self.data_manager.ticket_reserved_to_transaction_list_map[local_ticket].remove(transaction)
 
                 for remote_ticket in successfully_reserved_remote_tickets:
-                    self.contact_remote_server('abort', remote_tickets)
+                    self.contact_remote_server('abort', remote_ticket)
                 return
 
         # All tickets are reserved

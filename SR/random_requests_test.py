@@ -85,11 +85,16 @@ def send_request(my_ticket_list, server_port):
 
         time.sleep(3)
 
+def diagnostic_loop():
+    while threading.active_count() > 2:
+        # -2 because main thread, and diagnostic thread
+        print('Active worker threads: {0}'.format(threading.active_count()-2))
+        time.sleep(1)
 
 def main():
     thread_pool = []
-
-    for i in range(40):
+    diagnostic_thread = threading.Thread(target=diagnostic_loop)
+    for i in range(15):
         ticket_list_to_thread= create_random_ticket_list()
         for ticket in ticket_list_to_thread:
             tickets_to_buy[ticket] += 1
@@ -99,8 +104,12 @@ def main():
     for thread in thread_pool:
         thread.start()
 
+    diagnostic_thread.start()
+
     for thread in thread_pool:
         thread.join()
+
+    diagnostic_thread.join()
 
     print(tickets_to_buy)
     print(tickets_bought)

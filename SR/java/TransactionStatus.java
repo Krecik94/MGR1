@@ -22,5 +22,8 @@ public enum TransactionStatus {
     ERROR,
 
     // When transaction was completed but client never found out and disconnected. Abort transaction.
-    ACKNOWLEDGED
+    ACKNOWLEDGED,
+
+    // For remote transactions
+    REMOTE
 }

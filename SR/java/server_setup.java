@@ -42,7 +42,7 @@ class server_setup {
             for (Map.Entry<String, Map<String, Integer>> entry : airport_data.entrySet())
             {
                 t = new Thread(new TicketServer(entry.getKey(), entry.getValue()));
-                t.run();
+                t.start();
                 threadList.add(t);
             }
         }

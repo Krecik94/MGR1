@@ -29,7 +29,7 @@ class TransactionStatus(Enum):
     ACKNOWLEDGED = 7
 
     # For remote transactions
-    REMOTE = 10
+    REMOTE = 8
 
 
 class Transaction:

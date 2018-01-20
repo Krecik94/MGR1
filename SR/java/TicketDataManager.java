@@ -15,10 +15,10 @@ public class TicketDataManager {
 
     Map<String, Integer> ticket_quantities;
 
-    List<String> ticket_list = new ArrayList<String>(){};
+    List<String> myTicketList = new ArrayList<String>(){};
     List<Transaction> registered_transactions = new ArrayList<Transaction>(){};
 
-    List<Transaction> myTicketList = new ArrayList<Transaction>(){};
+    //List<Transaction> myTicketList = new ArrayList<Transaction>(){};
 
 
     TicketDataManager (String ID, Map<String, Integer> ticket_quantities) {
@@ -29,9 +29,9 @@ public class TicketDataManager {
         for (Map.Entry<String, String> entry : ticket_ID_to_airport_ID_map.entrySet())
         {
             if(entry.getValue() == ID) {
-                ticket_list.add(entry.getKey());
-                ticket_reserved_to_transaction_list_map.put(entry.getKey(), null);
-                ticket_completed_to_transaction_list_map.put(entry.getKey(), null);
+                myTicketList.add(entry.getKey());
+                ticket_reserved_to_transaction_list_map.put(entry.getKey(), new ArrayList<Transaction>(){});
+                ticket_completed_to_transaction_list_map.put(entry.getKey(), new ArrayList<Transaction>(){});
             }
             System.out.println(entry.getKey());
         }
@@ -39,10 +39,10 @@ public class TicketDataManager {
 
     private void fillMaps() {
         // Hardcoded information about which airport listens on what port
-        airport_ID_to_port_map.put("AirportA", 8010);
-        airport_ID_to_port_map.put("AirportB", 8011);
-        airport_ID_to_port_map.put("AirportC", 8012);
-        airport_ID_to_port_map.put("AirportD", 8013);
+        airport_ID_to_port_map.put("AirportA", 8000);
+        airport_ID_to_port_map.put("AirportB", 8001);
+        airport_ID_to_port_map.put("AirportC", 8002);
+        airport_ID_to_port_map.put("AirportD", 8003);
 
         // Hardcoded information about which airport handles which tickets
         ticket_ID_to_airport_ID_map.put("Ticket0", "AirportA");

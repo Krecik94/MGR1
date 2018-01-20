@@ -25,8 +25,8 @@ def main():
         'Ticket7': 20
     }
 
-    airport_data = {'AirportA': airport_a_ticket_quantity_dict,
-                    'AirportB': airport_b_ticket_quantity_dict,
+    airport_data = {#'AirportA': airport_a_ticket_quantity_dict,
+                    #'AirportB': airport_b_ticket_quantity_dict,
                     'AirportC': airport_c_ticket_quantity_dict,
                     'AirportD': airport_d_ticket_quantity_dict}
 

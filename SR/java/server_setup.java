@@ -15,22 +15,22 @@ class server_setup {
     static List<Thread> threadList = new ArrayList<Thread>(){};
 
     private static void fillMaps() {
-        airport_a_ticket_quantity_dict.put("Ticket0", 8);
-        airport_a_ticket_quantity_dict.put("Ticket1", 8);
+        airport_a_ticket_quantity_dict.put("Ticket0", 20);
+        airport_a_ticket_quantity_dict.put("Ticket1", 20);
 
-        airport_b_ticket_quantity_dict.put("Ticket2", 1);
-        airport_b_ticket_quantity_dict.put("Ticket3", 1);
-        airport_b_ticket_quantity_dict.put("Ticket4", 1);
+        airport_b_ticket_quantity_dict.put("Ticket2", 20);
+        airport_b_ticket_quantity_dict.put("Ticket3", 20);
+        airport_b_ticket_quantity_dict.put("Ticket4", 20);
 
-        airport_c_ticket_quantity_dict.put("Ticket5", 2);
+        airport_c_ticket_quantity_dict.put("Ticket5", 20);
 
-        airport_d_ticket_quantity_dict.put("Ticket6", 1);
-        airport_d_ticket_quantity_dict.put("Ticket7", 1);
+        airport_d_ticket_quantity_dict.put("Ticket6", 20);
+        airport_d_ticket_quantity_dict.put("Ticket7", 20);
 
         airport_data.put("AirportA", airport_a_ticket_quantity_dict);
         airport_data.put("AirportB", airport_b_ticket_quantity_dict);
-        airport_data.put("AirportC", airport_c_ticket_quantity_dict);
-        airport_data.put("AirportD", airport_d_ticket_quantity_dict);
+        //airport_data.put("AirportC", airport_c_ticket_quantity_dict);
+        //airport_data.put("AirportD", airport_d_ticket_quantity_dict);
 
     }
 

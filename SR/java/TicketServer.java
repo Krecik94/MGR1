@@ -54,7 +54,8 @@ public class TicketServer implements Runnable{
     // Loop that iterates over all transactions and handles them accordingly
     private void handle_requests_until_shutdown() {
         while(!this.should_shutdown) {
-            for (Transaction t: this.dataManager.registered_transactions) {
+            List<Transaction> copy = new ArrayList<Transaction>(this.dataManager.registered_transactions);
+            for (Transaction t: copy) {
                 if (t.status == TransactionStatus.REGISTERED)
                     handle_registered_transaction(t);
                 try {
@@ -121,7 +122,7 @@ public class TicketServer implements Runnable{
         for (String remote_ticket : remote_tickets) {
             String result = contact_remote_server("reserve", remote_ticket, t);
             // Case when ticket was reserved successfully
-            if (result == "success")
+            if (result.equals("success"))
                 successfully_reserved_remote_tickets.add(remote_ticket);
 
             // Case when ticket could not be reserved, aborting
@@ -153,7 +154,7 @@ public class TicketServer implements Runnable{
         for (String remote_ticket : remote_tickets) {
             String result = contact_remote_server("commit", remote_ticket, t);
             // Case when ticket was reserved successfully
-            if (result == "success")
+            if (result.equals("success"))
                 successfully_committed_remote_tickets.add(remote_ticket);
 
             // Case when ticket could not be committed, aborting
@@ -178,9 +179,9 @@ public class TicketServer implements Runnable{
 
             System.out.println("Contacting " + airport_ID + " with " + action);
             HttpURLConnection request_to_send;
-            URL url = new URL("http://localhost:" + port);
+            URL url = new URL("http://localhost:" + port + "/" + action);
             request_to_send = (HttpURLConnection) url.openConnection();
-            request_to_send.setRequestMethod(action);
+            request_to_send.setRequestMethod("POST");
 
 
             // Preparing data of the request
@@ -193,7 +194,7 @@ public class TicketServer implements Runnable{
                     .put("owning_transaction_ID", owning_transaction_ID)
                     .put("transaction_home_server_ID", transaction_home_server_ID).toString();
 
-            System.out.println(data_to_json.toString());
+            //System.out.println(data_to_json.toString());
             request_to_send.setDoOutput(true);
             try {
                 DataOutputStream wr = new DataOutputStream(request_to_send.getOutputStream());
@@ -217,7 +218,7 @@ public class TicketServer implements Runnable{
             //print result
             System.out.println("Received: " + response.toString());
 
-            if (response.toString() == "SUCCESS")
+            if (response.toString().equals("SUCCESS"))
                 return "success";
             else
                 return "error";
@@ -248,26 +249,27 @@ public class TicketServer implements Runnable{
                 switch (t.getRequestMethod()) {
                     case "POST" :
                         String data = "";
-                        System.out.println("received POST");
+                        //System.out.println("received POST");
                         BufferedReader in = new BufferedReader(
                                 new InputStreamReader(t.getRequestBody()));
                         String inputLine;
                         while ((inputLine = in.readLine()) != null) {
                             data = data + inputLine;
                         }
-                        System.out.println(data);
-                        System.out.println("POST accepted");
+                        //System.out.println(data);
+                        //System.out.println("POST accepted");
                         System.out.println(t.getRequestURI().getPath());
+                        //System.out.println("Odpowiedz :" + (t.getRequestURI().getPath().equals("/register_transaction")));
                         //t.getRequestURI().getPath()
-                        if (t.getRequestURI().getPath() == "/register_transaction")
+                        if (t.getRequestURI().getPath().equals("/register_transaction"))
                             response = this.register_transaction(data);
-                        else if (t.getRequestURI().getPath() == "/ping")
+                        else if (t.getRequestURI().getPath().equals("/ping"))
                             response = this.ping(data);
-                        else if (t.getRequestURI().getPath() == "/reserve")
+                        else if (t.getRequestURI().getPath().equals("/reserve"))
                             response = this.reserve_ticket(data);
-                        else if (t.getRequestURI().getPath() == "/commit")
+                        else if (t.getRequestURI().getPath().equals("/commit"))
                             response = this.commit_ticket(data);
-                        else if (t.getRequestURI().getPath() == "/abort")
+                        else if (t.getRequestURI().getPath().equals("/abort"))
                             response = this.abort_ticket(data);
 
                         // decoded_object = json.loads(received_bytes)
@@ -279,7 +281,6 @@ public class TicketServer implements Runnable{
 
                     case "GET" :
                         response = "This is the response GET";
-                        System.out.println(t.getRequestBody() + "n");
                         response = "<html><body><pre>Dane serwera " + this.dataManager.ID + "\n";
                         response += "Zarejestrowane transakcje:\n<hr>";
                         for(Transaction transaction : this.dataManager.registered_transactions) {
@@ -288,16 +289,16 @@ public class TicketServer implements Runnable{
                         }
                         response += "\nZarezerwowane bilety:\n";
                         for (String ticket_ID : this.dataManager.ticket_reserved_to_transaction_list_map.keySet()) {
-                            response += "\n{0}:".format(ticket_ID);
+                            response += "\n" + ticket_ID + ":";
                             for (Transaction transaction : this.dataManager.ticket_reserved_to_transaction_list_map.get(ticket_ID)){
-                                response += "\n{0}".format(transaction.ID);
+                                response += "\n" + transaction.ID;
                             }
                         }
                         response += "\n<hr>Kupione bilety:\n";
                         for (String ticket_ID : this.dataManager.ticket_completed_to_transaction_list_map.keySet()) {
-                            response += "\n{0}:".format(ticket_ID);
+                            response += "\n" + ticket_ID + ":";
                             for (Transaction transaction : this.dataManager.ticket_completed_to_transaction_list_map.get(ticket_ID)) {
-                                response += "\n{0}".format(transaction.ID);
+                                response += "\n" + transaction.ID;
                             }
                         }
                         response += "</pre></body></html>";
@@ -330,7 +331,7 @@ public class TicketServer implements Runnable{
                 JSONObject received_json = new JSONObject(data);
                 Transaction pinged_transaction = null;
                 for (Transaction t : this.dataManager.registered_transactions) {
-                    if(t.ID == received_json.getString("transaction_ID")){
+                    if(t.ID.equals(received_json.getString("transaction_ID"))){
                         pinged_transaction = t;
                         break;
                     }
@@ -343,7 +344,7 @@ public class TicketServer implements Runnable{
                 if (pinged_transaction.status == TransactionStatus.COMPLETED)
                     pinged_transaction.status = TransactionStatus.ACKNOWLEDGED;
 
-                return pinged_transaction.status.toString();
+                return "TransactionStatus." + pinged_transaction.status.toString();
             }
 
             private String reserve_ticket(String data) {
@@ -396,12 +397,12 @@ public class TicketServer implements Runnable{
                 if (!this.dataManager.myTicketList.contains(ticket_ID_json))
                     return "WRONG_SERVER";
 
-                System.out.println(owning_transaction_ID);
-                System.out.println(this.dataManager.ticket_reserved_to_transaction_list_map.get(ticket_ID_json));
+                //System.out.println(owning_transaction_ID);
+                //System.out.println(this.dataManager.ticket_reserved_to_transaction_list_map.get(ticket_ID_json));
                 Transaction existing_transaction = null;
 
                 for (Transaction t : this.dataManager.ticket_reserved_to_transaction_list_map.get(ticket_ID_json)) {
-                    if(t.ID == owning_transaction_ID){
+                    if(t.ID.equals(owning_transaction_ID)){
                         existing_transaction = t;
                         break;
                     }
@@ -425,7 +426,7 @@ public class TicketServer implements Runnable{
 
                 Transaction check_if_reserved = null;
                 for (Transaction t : this.dataManager.ticket_reserved_to_transaction_list_map.get(ticket_ID_json)) {
-                    if(t.ID == owning_transaction_ID){
+                    if(t.ID.equals(owning_transaction_ID)){
                         check_if_reserved = t;
                         break;
                     }
@@ -436,7 +437,7 @@ public class TicketServer implements Runnable{
 
                 Transaction check_if_committed = null;
                 for (Transaction t : this.dataManager.ticket_completed_to_transaction_list_map.get(ticket_ID_json)) {
-                    if(t.ID == owning_transaction_ID){
+                    if(t.ID.equals(owning_transaction_ID)){
                         check_if_committed = t;
                         break;
                     }

@@ -15,7 +15,7 @@ TODO:
 
 def main():
     # Creating request object with servers URL
-    request_to_send = urllib.request.Request('http://localhost:8010/register_transaction')
+    request_to_send = urllib.request.Request('http://localhost:8000/register_transaction')
 
     # Preparing data of the request
     # UUID4 ot ensure no collisions

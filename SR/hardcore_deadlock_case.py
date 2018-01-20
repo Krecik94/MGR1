@@ -82,7 +82,7 @@ def diagnostic_loop():
 def main():
     thread_pool = []
     diagnostic_thread = threading.Thread(target=diagnostic_loop)
-    for i in range(20):
+    for i in range(21):
         ticket_list_to_thread = create_random_permutation()
         for ticket in ticket_list_to_thread:
             tickets_to_buy[ticket] += 1

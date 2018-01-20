@@ -155,9 +155,7 @@ class AirportSupervisor:
 
         transaction.status = TransactionStatus.COMPLETED
 
-    # IMPLEMENT THIS
-    def contact_remote_server(self, action, ticket_ID, transaction):
-
+    def unsafe_contact_remote_server(self, action, ticket_ID, transaction):
         airpot_ID = self.data_manager.ticket_ID_to_airport_ID_map[ticket_ID]
         port = self.data_manager.airport_ID_to_port_map[airpot_ID]
         print(port)
@@ -187,6 +185,14 @@ class AirportSupervisor:
 
         if received_response == 'SUCCESS':
             return 'success'
+
+    def contact_remote_server(self, action, ticket_ID, transaction):
+        try:
+            return_value = self.unsafe_contact_remote_server(action, ticket_ID, transaction)
+        except Exception:
+            return_value = 'ERROR'
+        return return_value
+
 
     '''
     TODO: 

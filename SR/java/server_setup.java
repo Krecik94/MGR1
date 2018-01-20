@@ -12,7 +12,7 @@ class server_setup {
 
     static Map<String, Map<String, Integer>> airport_data = new HashMap<>();
 
-    static List<TicketServer> serverList = new ArrayList<TicketServer>(){};
+    static List<Thread> threadList = new ArrayList<Thread>(){};
 
     private static void fillMaps() {
         airport_a_ticket_quantity_dict.put("Ticket0", 8);
@@ -38,12 +38,12 @@ class server_setup {
         try {
             fillMaps();
 
-            TicketServer t;
+            Thread t;
             for (Map.Entry<String, Map<String, Integer>> entry : airport_data.entrySet())
             {
-                t = new TicketServer(entry.getKey(), entry.getValue());
+                t = new Thread(new TicketServer(entry.getKey(), entry.getValue()));
                 t.run();
-                serverList.add(t);
+                threadList.add(t);
             }
         }
         catch (Exception e) {

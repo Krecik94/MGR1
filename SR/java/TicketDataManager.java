@@ -10,13 +10,15 @@ public class TicketDataManager {
     Map<String, Integer> airport_ID_to_port_map = new HashMap<String, Integer>(){};
     Map<String, String> ticket_ID_to_airport_ID_map = new HashMap<String, String>(){};
 
-    Map<String, TransactionStatus[]> ticket_reserved_to_transaction_list_map = new HashMap<String, TransactionStatus[]>(){};
-    Map<String, TransactionStatus[]> ticket_completed_to_transaction_list_map = new HashMap<String, TransactionStatus[]>(){};
+    Map<String, List<Transaction>> ticket_reserved_to_transaction_list_map = new HashMap<String, List<Transaction>>(){};
+    Map<String, List<Transaction>> ticket_completed_to_transaction_list_map = new HashMap<String, List<Transaction>>(){};
 
     Map<String, Integer> ticket_quantities;
 
     List<String> ticket_list = new ArrayList<String>(){};
-    List<String> registered_transactions = new ArrayList<String>(){};
+    List<Transaction> registered_transactions = new ArrayList<Transaction>(){};
+
+    List<Transaction> myTicketList = new ArrayList<Transaction>(){};
 
 
     TicketDataManager (String ID, Map<String, Integer> ticket_quantities) {

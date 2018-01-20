@@ -1,6 +1,4 @@
 import tensorflow as tf
-import random
-from gensim.models import word2vec
 import numpy as np
 import input_parser
 import w2v_model
@@ -39,7 +37,6 @@ def neural_network_model(data, data2):
     """
     n_nodes_hl1 = 1000
     n_nodes_hl2 = 1000
-    n_nodes_hl3 = 500
     n_classes = 7
 
     hidden_1_layer_1 = {'weights': tf.Variable(tf.truncated_normal([100, n_nodes_hl1],
@@ -71,23 +68,14 @@ def neural_network_model(data, data2):
     l1_1 = tf.add(tf.matmul(data, hidden_1_layer_1['weights']), hidden_1_layer_1['biases'])
 
     l1_2 = tf.add(tf.matmul(data2, hidden_1_layer_2['weights']), hidden_1_layer_2['biases'])
-    #l1_2 = tf.nn.relu(l1_2)
 
     l2 = tf.add(tf.add(tf.matmul(l1_1, hidden_2_layer['weights1']), tf.matmul(l1_2, hidden_2_layer['weights2'])),
                 hidden_2_layer['biases'])
-    #l2 = tf.nn.relu(l2)
 
     output = tf.matmul(l2, output_layer['weights']) + output_layer['biases']
-    #output = tf.nn.relu(output)
 
     return output
 
-def test_cost(first, second):
-
-    #first_max = np.max(first)
-
-
-    return tf.nn.softmax_cross_entropy_with_logits(logits=first,labels=second)
 
 def train_neural_network(sentence_1, sentence_2):
     """
@@ -98,8 +86,6 @@ def train_neural_network(sentence_1, sentence_2):
     prediction = neural_network_model(sentence_1, sentence_2)
 
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=prediction, labels=result))
-    #cost = tf.reduce_mean(-tf.reduce_sum(tf.multiply(result, tf.log(tf.nn.softmax(logits=prediction) + 1e-10))))
-    #cost = test_cost(prediction,result)
     optimizer = tf.train.GradientDescentOptimizer(0.02).minimize(cost)  # GradientDescentOptimizer(1.0).minimize(cost)
 
     sentence_pairs = input_parser.parse_input('Data\\ISTS\\Train_data\\STSint.gs.images.wa')
@@ -117,15 +103,9 @@ def train_neural_network(sentence_1, sentence_2):
         second_test_input = np.zeros(100)
         result_test_output = np.zeros(7)
 
-
-
         first_test_input.shape = (1, first_test_input.shape[0])
         second_test_input.shape = (1, second_test_input.shape[0])
         result_test_output.shape = (1, result_test_output.shape[0])
-
-        #print(sess.run(cost, feed_dict={sentence_1: first_test_input, sentence_2: second_test_input, result: result_test_output}))
-
-        #print(prediction.eval({sentence_1: first_test_input, sentence_2: second_test_input}))
 
         hit = 0
         miss = 0
@@ -138,19 +118,15 @@ def train_neural_network(sentence_1, sentence_2):
                     first_input = np.zeros(100)
                     if first_index_list[0] != '0':
                         first_word_list = [sentence_pair.source[x] for x in first_index_list]
-                        # print(first_word_list)
                         for word in first_word_list:
                             first_input = np.add(first_input, model.wv[word.lower()])
-                        # print(first_input)
 
                     second_index_list = single_alignment.second_phrase.split(' ')
                     second_input = np.zeros(100)
                     if second_index_list[0] != '0':
                         second_word_list = [sentence_pair.translation[x] for x in second_index_list]
-                        # print(second_word_list)
                         for word in second_word_list:
                             second_input = np.add(second_input, model.wv[word.lower()])
-                        # print(second_input)
 
                     output = np.zeros(7)
                     if single_alignment.match == 'NIL':
@@ -168,16 +144,11 @@ def train_neural_network(sentence_1, sentence_2):
                     elif single_alignment.match == '5':
                         output[6] = 1
 
-
-                    # print(output)
-                    # print(first_input)
                     first_input.shape = (1, first_input.shape[0])
                     second_input.shape = (1, second_input.shape[0])
 
                     _, c = sess.run([optimizer, cost],
                                     feed_dict={sentence_1: first_input, sentence_2: second_input, result: output})
-
-                    #print(sess.run(tf.log(tf.nn.softmax(logits=prediction)), feed_dict={sentence_1: first_input, sentence_2: second_input}))
 
                     if epoch > hm_epochs-2:
                         out = sess.run(prediction, feed_dict={sentence_1: first_input, sentence_2: second_input})
@@ -186,13 +157,7 @@ def train_neural_network(sentence_1, sentence_2):
                               hit = hit+1
                         else:
                             miss = miss+1
-                        #print('prediction: ', np.unravel_index(out.argmax(), out.shape)[1] ==
-                        #      np.unravel_index(output.argmax(), output.shape)[0])
 
-                    # print(sess.run(cost,feed_dict={sentence_1: first_input, sentence_2: second_input, result: output}))
-
-
-                    # print(prediction.eval({sentence_1: first_input, sentence_2: second_input}))
                     epoch_loss += c
 
             if epoch > hm_epochs-2:
@@ -209,19 +174,15 @@ def train_neural_network(sentence_1, sentence_2):
                 first_input = np.zeros(100)
                 if first_index_list[0] != '0':
                     first_word_list = [sentence_pair.source[x] for x in first_index_list]
-                    # print(first_word_list)
                     for word in first_word_list:
                         first_input = np.add(first_input, model.wv[word.lower()])
-                    # print(first_input)
 
                 second_index_list = single_alignment.second_phrase.split(' ')
                 second_input = np.zeros(100)
                 if second_index_list[0] != '0':
                     second_word_list = [sentence_pair.translation[x] for x in second_index_list]
-                    # print(second_word_list)
                     for word in second_word_list:
                         second_input = np.add(second_input, model.wv[word.lower()])
-                    # print(second_input)
 
                 output = np.zeros(7)
                 if single_alignment.match == 'NIL':
@@ -248,8 +209,6 @@ def train_neural_network(sentence_1, sentence_2):
                     hit = hit+1
                 else:
                     miss = miss+1
-                # print('prediction: ', np.unravel_index(out.argmax(), out.shape)[1] ==
-                #       np.unravel_index(output.argmax(), output.shape)[0])
 
         print('Recall: ', hit, '/', hit+miss, ' = ', hit/(hit+miss))
         Recall = hit/(miss+hit)
@@ -257,22 +216,6 @@ def train_neural_network(sentence_1, sentence_2):
         F = 2 * (Precision*Recall)/(Precision+Recall)
 
         print('F: ', F)
-
-        # first_test_input = np.zeros(100)
-        # second_test_input = np.zeros(100)
-        #
-        # first_test_input.shape = (1, first_test_input.shape[0])
-        # second_test_input.shape = (1, second_test_input.shape[0])
-        #
-        # print('Out: ', sess.run(prediction,  feed_dict={sentence_1: first_test_input, sentence_2: second_test_input}))
-
-        '''for i in range(5):
-            
-            print('Accuracy:', prediction.eval({sentence_1: fst_test, sentence_2: scnd_test}), input_data[i][2],
-                  prediction.eval({sentence_1: fst_test, sentence_2: scnd_test}) / input_data[i][
-                      2])  # , y: input_data[0][2]}))
-        omg = sess.run([v for v in tf.trainable_variables() if v.name == "weights_out:0"])
-        print(omg)'''
 
 
 if __name__ == "__main__":

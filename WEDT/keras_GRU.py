@@ -61,7 +61,8 @@ input_data = np.reshape(input_data, (len(input_data), timesteps, data_dim))
 y_pred = network_model.predict(input_data)
 print(network_model.evaluate(input_data,output_data, batch_size=20, verbose=1))
 
-print(confusion_matrix(output_data.argmax(axis=1),y_pred.argmax(axis=1)))
+# Confusion matrix
+print("Confusion matrix :\n", confusion_matrix(output_data.argmax(axis=1),y_pred.argmax(axis=1)))
 
 # F1 score
-print(f1_score(output_data.argmax(axis=1), y_pred.argmax(axis=1),average='micro'))
+print("F1 :", f1_score(output_data.argmax(axis=1), y_pred.argmax(axis=1),average='micro'))

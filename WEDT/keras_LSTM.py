@@ -6,9 +6,11 @@ import numpy as np
 import input_parser
 import w2v_model
 
-# .wa file with data. It will read a training data from Data/ISTS/Train_data folder
-# and test data from Data/ISTS/test_data_w_fold_standard
-FILE = 'STSint.gs.images.wa'
+# .wa file with training data in Data/ISTS/Train_data folder
+FILE_TRAIN = 'STSint.gs.images.wa'
+
+# .wa file with testing data in Data/ISTS/test_data_w_fold folder
+FILE_TEST = 'STSint.gs.images.wa'
 
 # Variable describing if neural network should check for scores or etiquettes
 # Vaules: 'scores', 'etiquettes'
@@ -24,7 +26,7 @@ model = w2v_model.create_m2v_model(['Data/ISTS/test_data_w_fold_standard/STSint.
                                     'Data/ISTS/Train_data/STSint.input.images.sent2.txt'])
 
 # Parsing input to create proper list of sentence pairs
-sentence_pairs = input_parser.parse_input('Data\\ISTS\\Train_data\\' + FILE)
+sentence_pairs = input_parser.parse_input('Data\\ISTS\\Train_data\\' + FILE_TRAIN)
 
 # Creating input and output data sets to be fed into neural network
 if MODE == 'scores':
@@ -58,7 +60,7 @@ input_data = np.reshape(input_data, (len(input_data), timesteps, data_dim))
 network_model.fit(input_data, output_data,
           batch_size=64, epochs=20)
 
-sentence_pairs = input_parser.parse_input('Data\\ISTS\\test_data_w_fold_standard\\' + FILE)
+sentence_pairs = input_parser.parse_input('Data\\ISTS\\test_data_w_fold_standard\\' + FILE_TEST)
 
 input_data = None
 output_data = None

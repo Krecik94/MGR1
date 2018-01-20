@@ -16,8 +16,8 @@ model = w2v_model.create_m2v_model(['Data/ISTS/test_data_w_fold_standard/STSint.
 sentence_pairs = input_parser.parse_input('Data\\ISTS\\test_data_w_fold_standard\\STSint.gs.images.wa')
 print(len(sentence_pairs))
 
-input_data = np.array([])
-output_data = np.array([])
+input_data = None
+output_data = None
 
 for sentence_pair in sentence_pairs:
     for single_alignment in sentence_pair.alignment:
@@ -39,7 +39,11 @@ for sentence_pair in sentence_pairs:
                 second_input = np.add(second_input, model.wv[word.lower()])
             # print(second_input)
 
-        input_data = np.append(input_data, np.concatenate(first_input, second_input))
+        to_append = np.concatenate((first_input, second_input))
+        if input_data is None:
+            input_data = np.array([to_append], ndmin=2)
+        else:
+            input_data = np.append(input_data, [to_append], axis=0)
 
         output = np.zeros(7)
         if single_alignment.match == 'NIL':
@@ -57,7 +61,10 @@ for sentence_pair in sentence_pairs:
         elif single_alignment.match == '5':
             output[6] = 1
 
-        output_data = np.append(output_data, output)
+        if output_data is None:
+            output_data = np.array([output], ndmin=2)
+        else:
+            output_data = np.append(output_data, [output], axis=0)
 
 print(input_data.shape)
 print(output_data.shape)
@@ -87,6 +94,6 @@ x_val = np.random.random((100, timesteps, data_dim))
 y_val = np.random.random((100, num_classes))
 
 model.fit(x_train, y_train,
-          batch_size=64, epochs=5)
+          batch_size=64, epochs=10)
     #,
      #     validation_data=(x_val, y_val))

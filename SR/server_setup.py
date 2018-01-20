@@ -6,23 +6,23 @@ def main():
     server_threads = []
 
     airport_a_ticket_quantity_dict = {
-        'Ticket0': 50,
-        'Ticket1': 50
+        'Ticket0': 200,
+        'Ticket1': 200
     }
 
     airport_b_ticket_quantity_dict = {
-        'Ticket2': 50,
-        'Ticket3': 50,
-        'Ticket4': 50
+        'Ticket2': 200,
+        'Ticket3': 200,
+        'Ticket4': 200
     }
 
     airport_c_ticket_quantity_dict = {
-        'Ticket5': 50
+        'Ticket5': 200
     }
 
     airport_d_ticket_quantity_dict = {
-        'Ticket6': 50,
-        'Ticket7': 50
+        'Ticket6': 200,
+        'Ticket7': 200
     }
 
     airport_data = {'AirportA': airport_a_ticket_quantity_dict,

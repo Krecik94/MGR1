@@ -182,12 +182,13 @@ print(output_data.shape)
 y_pred = network_model.predict(input_data)
 
 print(y_pred)
-print(input_data)
-#confusion_matrix(output_data, y_pred)
+print(output_data)
 
-score = network_model.evaluate(input_data, output_data,verbose=1)
+print(confusion_matrix(output_data.argmax(axis=1),y_pred.argmax(axis=1)))
 
-print(score)
+#score = network_model.evaluate(input_data, output_data,verbose=1)
+
+#print(score)
 # test_input = np.array([np.concatenate((model.wv['dog'], model.wv['dog']))], ndmin=2)
 # pred_test = network_model.predict(test_input)
 # print (pred_test)

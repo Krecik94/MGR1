@@ -25,42 +25,42 @@ input_data, output_data = input_parser.create_input_output_data_scores(sentence_
 print(input_data.shape)
 print(output_data.shape)
 
-data_dim = 200
-timesteps = 8
+data_dim = 100
+timesteps = 2
 num_classes = 7
 
-# # expected input data shape: (batch_size, timesteps, data_dim)
-# model = Sequential()
-# model.add(LSTM(32, return_sequences=True,
-#                input_shape=(timesteps, data_dim)))  # returns a sequence of vectors of dimension 32
-# model.add(LSTM(32, return_sequences=True))  # returns a sequence of vectors of dimension 32
-# model.add(LSTM(32))  # return a single vector of dimension 32
-# model.add(Dense(7, activation='softmax'))
+# expected input data shape: (batch_size, timesteps, data_dim)
+network_model = Sequential()
+network_model.add(LSTM(32, return_sequences=True,
+               input_shape=(timesteps, data_dim)))  # returns a sequence of vectors of dimension 32
+network_model.add(LSTM(32, return_sequences=True))  # returns a sequence of vectors of dimension 32
+network_model.add(LSTM(32))  # return a single vector of dimension 32
+network_model.add(Dense(7, activation='softmax'))
 
 # Initialize the constructor
-network_model = Sequential()
+# network_model = Sequential()
 
 # Add an input layer
-network_model.add(Dense(300, activation='relu', input_shape=(200,)))
+# network_model.add(Dense(300, activation='relu', input_shape=(200,)))
 
 # Add one hidden layer
 
-network_model.add(Dense(50, activation='relu'))
+# network_model.add(Dense(50, activation='relu'))
 
 # Add an output layer
-network_model.add(Dense(7, activation='softmax'))
+# network_model.add(Dense(7, activation='softmax'))
 
 # network_model output shape
-network_model.output_shape
+# network_model.output_shape
 
 # network_model summary
-network_model.summary()
+# network_model.summary()
 
 # network_model config
-network_model.get_config()
+# network_model.get_config()
 
 # List all weight tensors
-network_model.get_weights()
+# network_model.get_weights()
 
 # Creating neural network
 network_model.compile(loss='categorical_crossentropy',
@@ -76,9 +76,13 @@ network_model.compile(loss='categorical_crossentropy',
 # y_val = np.random.random((100, num_classes))
 #
 
+input_data = np.reshape(input_data, (len(input_data), timesteps, data_dim))
+
+# print(input_data[0])
+
 # Training neural network
 network_model.fit(input_data, output_data,
-          batch_size=64, epochs=100)
+          batch_size=64, epochs=20)
 
 
 sentence_pairs = input_parser.parse_input('Data\\ISTS\\test_data_w_fold_standard\\STSint.gs.headlines.wa')
@@ -88,6 +92,8 @@ input_data = None
 output_data = None
 
 input_data, output_data = input_parser.create_input_output_data_scores(sentence_pairs,model)
+
+input_data = np.reshape(input_data, (len(input_data), timesteps, data_dim))
 
 print(input_data.shape)
 print(output_data.shape)
@@ -99,7 +105,7 @@ print(network_model.evaluate(input_data,output_data, batch_size=20, verbose=1))
 print(confusion_matrix(output_data.argmax(axis=1),y_pred.argmax(axis=1)))
 
 # Precision
-print(precision_score(output_data.argmax(axis=1), y_pred.argmax(axis=1),average='micro'))
+# print(precision_score(output_data.argmax(axis=1), y_pred.argmax(axis=1), average='micro'))
 
 # # Recall
 # print(recall_score(output_data.argmax(axis=1), y_pred.argmax(axis=1),average='micro'))
@@ -115,4 +121,4 @@ print(precision_score(output_data.argmax(axis=1), y_pred.argmax(axis=1),average=
 # pred_test = network_model.predict(test_input)
 # print (pred_test)
 #     #,
-#      #     validation_data=(x_val, y_val))
+     #     validation_data=(x_val, y_val))

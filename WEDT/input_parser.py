@@ -163,6 +163,68 @@ def create_input_output_data_scores(sentence_pairs, model):
 
     return (input_data,output_data)
 
+def create_input_output_data_etiquettes(sentence_pairs, model):
+    """
+    Creates input and output data sets of proper dimensions to be fed into the network.
+    Output data consists of scores assigned to phrase pairs
+    :param sentence_pairs: list of sentence pair objects to be converted into proper format
+    :return: tuple of (input_data, output_data) where input data is a (*,200) matrix and output data is a (*,7) matrix
+    """
+    input_data = None
+    output_data = None
+
+    for sentence_pair in sentence_pairs:
+        for single_alignment in sentence_pair.alignment:
+            first_index_list = single_alignment.first_phrase.split(' ')
+            first_input = np.zeros(100)
+            if first_index_list[0] != '0':
+                first_word_list = [sentence_pair.source[x] for x in first_index_list]
+                # print(first_word_list)
+                for word in first_word_list:
+                    first_input = np.add(first_input, model.wv[word.lower()])
+                # print(first_input)
+
+            second_index_list = single_alignment.second_phrase.split(' ')
+            second_input = np.zeros(100)
+            if second_index_list[0] != '0':
+                second_word_list = [sentence_pair.translation[x] for x in second_index_list]
+                # print(second_word_list)
+                for word in second_word_list:
+                    second_input = np.add(second_input, model.wv[word.lower()])
+                # print(second_input)
+
+            to_append = np.concatenate((first_input, second_input))
+            if input_data is None:
+                input_data = np.array([to_append], ndmin=2)
+            else:
+                input_data = np.append(input_data, [to_append], axis=0)
+
+            output = np.zeros(8)
+            if single_alignment.label == 'EQUI':
+                output[0] = 1
+            elif single_alignment.label == 'OPPO':
+                output[1] = 1
+            elif single_alignment.label == 'SPE2':
+                output[2] = 1
+            elif single_alignment.label == 'SPE2':
+                output[3] = 1
+            elif single_alignment.label == 'SIM':
+                output[4] = 1
+            elif single_alignment.label == 'REL':
+                output[5] = 1
+            elif single_alignment.label == 'ALIC':
+                output[6] = 1
+            elif single_alignment.label == 'NOALI':
+                output[7] = 1
+
+            if output_data is None:
+                output_data = np.array([output], ndmin=2)
+            else:
+                output_data = np.append(output_data, [output], axis=0)
+
+    return (input_data,output_data)
+
+
 
 if __name__ == "__main__":
     parse_input()

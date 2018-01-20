@@ -1,4 +1,5 @@
 import datetime
+import random
 import urllib.request
 import uuid
 from http.server import SimpleHTTPRequestHandler, HTTPServer
@@ -51,7 +52,7 @@ class AirportSupervisor:
                 # print(transaction.ID)
                 if transaction.status == TransactionStatus.REGISTERED:
                     self.handle_registered_transaction(transaction)
-                time.sleep(2)
+            time.sleep(1)
 
     def handle_registered_transaction(self, transaction):
         # Setting transaction status to let outer loop know it is being processed
@@ -66,9 +67,21 @@ class AirportSupervisor:
         # Counting if local server has enough tickets START
         has_enough_local_tickets = True
         for local_ticket in local_tickets:
+            purchased_tickets = len(self.data_manager.ticket_completed_to_transaction_list_map[local_ticket])
+            # Check if tickets are completely sold-out
+            if purchased_tickets >= self.data_manager.ticket_quantities[local_ticket]:
+                has_enough_local_tickets = False
+            # Check if there are any registered tickets pending
+            # If yes - wait. This, or some other transaction may be deadlocked
+            sleep_time = random.randint(1, 5)
+            for i in range(3):
+                reserved_tickets = len(self.data_manager.ticket_reserved_to_transaction_list_map[local_ticket])
+                purchased_tickets = len(self.data_manager.ticket_completed_to_transaction_list_map[local_ticket])
+                if reserved_tickets + purchased_tickets >= self.data_manager.ticket_quantities[local_ticket]:
+                    time.sleep(sleep_time)
+            # If no tickets became available - this transaction is deadlocked. Abort.
             reserved_tickets = len(self.data_manager.ticket_reserved_to_transaction_list_map[local_ticket])
             purchased_tickets = len(self.data_manager.ticket_completed_to_transaction_list_map[local_ticket])
-            # Doesn't work with deadlocks TODO FIX THIS
             if reserved_tickets + purchased_tickets >= self.data_manager.ticket_quantities[local_ticket]:
                 has_enough_local_tickets = False
         # Counting if local server has enough tickets END
@@ -149,7 +162,7 @@ class AirportSupervisor:
         port = self.data_manager.airport_ID_to_port_map[airpot_ID]
         print(port)
 
-        print('Contacting {0} with {1}'.format(airpot_ID,action))
+        print('Contacting {0} with {1}'.format(airpot_ID, action))
 
         request_to_send = urllib.request.Request('http://localhost:{0}/{1}'.format(port, action))
 
@@ -294,7 +307,7 @@ def make_handler_class_from_argv(data_manager):
         def ping(self, received_data):
             received_json = json.loads(received_data)
             pinged_transaction = next((transaction for transaction in self.data_manager.registered_transactions if
-                                      transaction.ID == received_json['transaction_ID']), None)
+                                       transaction.ID == received_json['transaction_ID']), None)
             if pinged_transaction is None:
                 return 'Invalid transaction ID'
             pinged_transaction.last_ping_timestamp = datetime.datetime.now()
@@ -309,16 +322,25 @@ def make_handler_class_from_argv(data_manager):
             ticket_ID_json = received_json['ticket_ID_json']
             owning_transaction_ID = received_json['owning_transaction_ID']
             transaction_home_server_ID = received_json['transaction_home_server_ID']
-            print('Reserving ticket {0} for {1}'.format(ticket_ID_json,transaction_home_server_ID))
+            print('Reserving ticket {0} for {1}'.format(ticket_ID_json, transaction_home_server_ID))
 
             if ticket_ID_json not in self.data_manager.my_ticket_list:
                 return 'WRONG_SERVER'
-            reserved_tickets = len(self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json])
             purchased_tickets = len(self.data_manager.ticket_completed_to_transaction_list_map[ticket_ID_json])
             if purchased_tickets >= self.data_manager.ticket_quantities[ticket_ID_json]:
                 return 'SOLD_OUT'
+            sleep_time = random.randint(1, 5)
+            for i in range(3):
+                reserved_tickets = len(self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json])
+                purchased_tickets = len(self.data_manager.ticket_completed_to_transaction_list_map[ticket_ID_json])
+                if purchased_tickets + reserved_tickets >= self.data_manager.ticket_quantities[ticket_ID_json]:
+                    time.sleep(sleep_time)
+            # If no tickets became available - this transaction is deadlocked. Abort.
+            reserved_tickets = len(self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json])
+            purchased_tickets = len(self.data_manager.ticket_completed_to_transaction_list_map[ticket_ID_json])
             if purchased_tickets + reserved_tickets >= self.data_manager.ticket_quantities[ticket_ID_json]:
                 return 'ALL_RESERVED'
+
             self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json].append(
                 Transaction(ID=owning_transaction_ID,
                             ticket_ID_list=[],
@@ -338,10 +360,10 @@ def make_handler_class_from_argv(data_manager):
 
             print(owning_transaction_ID)
             print(self.data_manager.ticket_reserved_to_transaction_list_map[
-                ticket_ID_json])
+                      ticket_ID_json])
             existing_transaction = next((transaction for transaction in
-                                        self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json]
-                                        if transaction.ID == owning_transaction_ID), None)
+                                         self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json]
+                                         if transaction.ID == owning_transaction_ID), None)
             if existing_transaction is None:
                 return 'NOT_RESERVED'
 
@@ -349,21 +371,22 @@ def make_handler_class_from_argv(data_manager):
             self.data_manager.ticket_completed_to_transaction_list_map[ticket_ID_json].append(existing_transaction)
             return 'SUCCESS'
 
-        def abort_ticket(self,received_data):
+        def abort_ticket(self, received_data):
             received_json = json.loads(received_data)
             ticket_ID_json = received_json['ticket_ID_json']
             owning_transaction_ID = received_json['owning_transaction_ID']
             transaction_home_server_ID = received_json['transaction_home_server_ID']
-            print('Aborting ticket {0} for {1}, transaction {2}'.format(ticket_ID_json, transaction_home_server_ID, owning_transaction_ID))
+            print('Aborting ticket {0} for {1}, transaction {2}'.format(ticket_ID_json, transaction_home_server_ID,
+                                                                        owning_transaction_ID))
             check_if_reserved = next((transaction for transaction in
-                                         self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json]
-                                         if transaction.ID == owning_transaction_ID), None)
+                                      self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json]
+                                      if transaction.ID == owning_transaction_ID), None)
             if check_if_reserved is not None:
                 self.data_manager.ticket_reserved_to_transaction_list_map[ticket_ID_json].remove(check_if_reserved)
 
             check_if_committed = next((transaction for transaction in
-                                      self.data_manager.ticket_completed_to_transaction_list_map[ticket_ID_json]
-                                      if transaction.ID == owning_transaction_ID), None)
+                                       self.data_manager.ticket_completed_to_transaction_list_map[ticket_ID_json]
+                                       if transaction.ID == owning_transaction_ID), None)
             if check_if_committed is not None:
                 self.data_manager.ticket_completed_to_transaction_list_map[ticket_ID_json].remove(check_if_committed)
 

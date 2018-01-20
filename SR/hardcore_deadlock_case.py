@@ -8,43 +8,31 @@ import random
 safety_lock = threading.RLock()
 
 ticket_list = ['Ticket0',
-               'Ticket1',
                'Ticket2',
-               'Ticket3',
-               'Ticket4',
                'Ticket5',
-               'Ticket6',
-               'Ticket7'
                ]
 
-port_list = [8000,8001,8002,8003]
+port_list = [8000, 8001, 8002, 8003]
 
 tickets_to_buy = {
     'Ticket0': 0,
-    'Ticket1': 0,
     'Ticket2': 0,
-    'Ticket3': 0,
-    'Ticket4': 0,
     'Ticket5': 0,
-    'Ticket6': 0,
-    'Ticket7': 0,
 }
 
 tickets_bought = {'Ticket0': 0,
-                  'Ticket1': 0,
                   'Ticket2': 0,
-                  'Ticket3': 0,
-                  'Ticket4': 0,
                   'Ticket5': 0,
-                  'Ticket6': 0,
-                  'Ticket7': 0,
                   }
 
 
-def create_random_ticket_list():
-    how_many_tickets = random.randint(1, 7)
-    random_ticket_list = random.sample(set(ticket_list), how_many_tickets)
-    return random_ticket_list
+def create_random_permutation():
+    safe_construct_fresh_list = []
+    for ticket in ticket_list:
+        safe_construct_fresh_list.append(ticket)
+    random.shuffle(safe_construct_fresh_list)
+    print(safe_construct_fresh_list)
+    return safe_construct_fresh_list
 
 
 def send_request(my_ticket_list, server_port):
@@ -89,21 +77,25 @@ def send_request(my_ticket_list, server_port):
 def main():
     thread_pool = []
 
-    for i in range(40):
-        ticket_list_to_thread= create_random_ticket_list()
+    for i in range(60):
+        ticket_list_to_thread = create_random_permutation()
         for ticket in ticket_list_to_thread:
             tickets_to_buy[ticket] += 1
-        port_to_thread= random.choice(port_list)
-        thread_pool.append(threading.Thread(target=send_request, args=[ticket_list_to_thread,port_to_thread]))
+        port_to_thread = random.choice(port_list)
+        thread_pool.append(threading.Thread(target=send_request, args=[ticket_list_to_thread, port_to_thread]))
 
     for thread in thread_pool:
         thread.start()
 
+    i=0
     for thread in thread_pool:
         thread.join()
+        print(i)
+        i+=1
 
     print(tickets_to_buy)
     print(tickets_bought)
+
 
 if __name__ == "__main__":
     main()

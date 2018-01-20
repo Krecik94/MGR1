@@ -10,6 +10,10 @@ import w2v_model
 # and test data from Data/ISTS/test_data_w_fold_standard
 FILE = 'STSint.gs.images.wa'
 
+# Variable describing if neural network should check for scores or etiquettes
+# Vaules: 'scores', 'etiquettes'
+MODE = 'scores'
+
 model = w2v_model.create_m2v_model(['Data/ISTS/test_data_w_fold_standard/STSint.input.headlines.sent1.txt',
                                     'Data/ISTS/test_data_w_fold_standard/STSint.input.headlines.sent2.txt',
                                     'Data/ISTS/test_data_w_fold_standard/STSint.input.images.sent1.txt',
@@ -23,11 +27,17 @@ model = w2v_model.create_m2v_model(['Data/ISTS/test_data_w_fold_standard/STSint.
 sentence_pairs = input_parser.parse_input('Data\\ISTS\\Train_data\\' + FILE)
 
 # Creating input and output data sets to be fed into neural network
-input_data, output_data = input_parser.create_input_output_data_scores(sentence_pairs,model)
+if MODE == 'scores':
+    input_data, output_data = input_parser.create_input_output_data_scores(sentence_pairs, model)
+elif MODE == 'etiquettes':
+    input_data, output_data = input_parser.create_input_output_data_etiquettes(sentence_pairs, model)
 
 data_dim = 100
 timesteps = 2
-num_classes = 7
+if MODE == 'scores':
+    num_classes = 7
+elif MODE == 'etiquettes':
+    num_classes = 8
 
 # expected input data shape: (batch_size, timesteps, data_dim)
 network_model = Sequential()
@@ -35,7 +45,7 @@ network_model.add(LSTM(32, return_sequences=True,
                input_shape=(timesteps, data_dim)))  # returns a sequence of vectors of dimension 32
 network_model.add(LSTM(32, return_sequences=True))  # returns a sequence of vectors of dimension 32
 network_model.add(LSTM(32))  # return a single vector of dimension 32
-network_model.add(Dense(7, activation='softmax'))
+network_model.add(Dense(num_classes, activation='softmax'))
 
 # Creating neural network
 network_model.compile(loss='categorical_crossentropy',
@@ -53,7 +63,10 @@ sentence_pairs = input_parser.parse_input('Data\\ISTS\\test_data_w_fold_standard
 input_data = None
 output_data = None
 
-input_data, output_data = input_parser.create_input_output_data_scores(sentence_pairs,model)
+if MODE == 'scores':
+    input_data, output_data = input_parser.create_input_output_data_scores(sentence_pairs, model)
+elif MODE == 'etiquettes':
+    input_data, output_data = input_parser.create_input_output_data_etiquettes(sentence_pairs, model)
 
 input_data = np.reshape(input_data, (len(input_data), timesteps, data_dim))
 

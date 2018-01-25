@@ -30,7 +30,7 @@ addRow colNum houses rowGas colGas currRow currCol | ((currRow, currCol) `elem` 
                                                          && not ((currRow+1, currCol) `elem` houses)
                                                          && not ((currRow-1, currCol) `elem` houses))= "X" ++ (addRow (colNum-1) houses rowGas colGas currRow (currCol+1))
                                                    | otherwise                                       = "W" ++ (addRow (colNum-1) houses rowGas colGas currRow (currCol+1))
- 
+
 arrayToPair :: [Int] -> [(Int, Int)]
 arrayToPair [] = []
 arrayToPair (x1:x2:xs) = (x1, x2) : (arrayToPair xs)

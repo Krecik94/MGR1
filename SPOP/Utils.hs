@@ -13,13 +13,14 @@ printInputData (InputData a b c) = do
  putStrLn (a ++ b ++ c)  
  return() 
  
-make2dArray :: Int -> Int -> [[Char]]
-make2dArray 0 _ = []
-make2dArray rowNum colNum = (addRow colNum) : (make2dArray (rowNum-1) colNum)
+make2dArray :: Int -> Int -> [(Int, Int)] -> Int -> [[Char]]
+make2dArray 0 _ _ _ = []
+make2dArray rowNum colNum houses currRow = (addRow colNum houses currRow 0) : (make2dArray (rowNum-1) colNum houses (currRow+1))
 
-addRow :: Int -> [Char] 
-addRow 0 = [];
-addRow colNum = "W" ++ (addRow (colNum-1))
+addRow :: Int -> [(Int, Int)] -> Int -> Int ->[Char] 
+addRow 0 _ _ _ = [];
+addRow colNum houses currRow currCol | ((currRow, currCol) `elem` houses) = "D" ++ (addRow (colNum-1) houses currRow (currCol+1))
+                                     | otherwise = "W" ++ (addRow (colNum-1) houses currRow (currCol+1))
  
 arrayToPair :: [Int] -> [(Int, Int)]
 arrayToPair [] = []

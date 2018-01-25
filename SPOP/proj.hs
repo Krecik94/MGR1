@@ -7,6 +7,6 @@ run = do
  printInputData info
  let row = parseToInt (rows info)
  let col = parseToInt (cols info)
- print row
+ let pair = parseToPairs (pairs info)
  return ()
  

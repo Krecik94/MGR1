@@ -8,6 +8,7 @@ run = do
  let row = parseToInt (rows info)
  let col = parseToInt (cols info)
  let pair = parseToPairs (pairs info)
- print pair
+ let board = make2dArray (length row) (length col)
+ print board
  return ()
  

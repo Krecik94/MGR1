@@ -1,4 +1,5 @@
 import numpy
+import math
 import cv2
 
 
@@ -13,14 +14,42 @@ class Encoder:
         # Image is of numpy.ndarray type
         image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
 
-        print('Size of input image: {0}'.format(image.size))
+        #print('Size of input image: {0}'.format(image.size))
 
         # List comprehension. Gathers all pixels from input data and forms a list.
         input_data = [x for x in image.flat]
 
-        print('Size of data in list format: {0}'.format(len(input_data)))
+        #print('Size of data in list format: {0}'.format(len(input_data)))
 
         return input_data
+
+    @staticmethod
+    def calculate_entropy(frequency_dict):
+        total_symbols_sum = 0
+        for key in frequency_dict.keys():
+            total_symbols_sum += frequency_dict[key]
+
+        entropy = 0
+
+        for key in frequency_dict.keys():
+            probability = frequency_dict[key]/total_symbols_sum
+            entropy += probability * math.log(probability,2)
+        return -entropy
+
+    @staticmethod
+    def calculate_average_code_length(frequency_dict, compress_dict):
+        total_symbols_sum = 0
+        for key in frequency_dict.keys():
+            total_symbols_sum += frequency_dict[key]
+
+        average_code_length = 0
+
+        for key in frequency_dict.keys():
+            probability = frequency_dict[key]/total_symbols_sum
+            average_code_length += probability * len(compress_dict[key])
+        return average_code_length
+
+
 
     @staticmethod
     def calculate_frequencies(input_data, mode):

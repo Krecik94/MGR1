@@ -23,7 +23,7 @@ for path in glob.glob("test_data\\*.pgm"):
         print('Creating code dicts')
         start = time.time()
         HuffmanTree = Tree()
-        (compressDictionary, decompressDictionary) = HuffmanTree.create_codes(frequency_dict)
+        (compressDictionary, decompressDictionary) = HuffmanTree.create_codes(frequency_dict, mode)
         end = time.time()
         print('Time spent creating code dicts: {0}'.format(end - start))
 

@@ -15,7 +15,7 @@ for path in glob.glob("test_data\\*.pgm"):
         start = time.time()
         frequency_dict = Encoder.calculate_frequencies(input_data, mode)
         print('Symbols in dict: {0}'.format(len(frequency_dict.keys())))
-        entropy = Encoder.calculate_entropy(frequency_dict)
+        entropy = Encoder.calculate_entropy(frequency_dict, mode)
         print('Entropy: {0:01.2f}'.format(entropy))
         HuffmanTree = Tree()
         (compressDictionary, decompressDictionary) = HuffmanTree.create_codes(frequency_dict, mode)

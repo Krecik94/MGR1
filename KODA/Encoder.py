@@ -14,27 +14,60 @@ class Encoder:
         # Image is of numpy.ndarray type
         image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
 
-        #print('Size of input image: {0}'.format(image.size))
+        # print('Size of input image: {0}'.format(image.size))
 
         # List comprehension. Gathers all pixels from input data and forms a list.
         input_data = [x for x in image.flat]
 
-        #print('Size of data in list format: {0}'.format(len(input_data)))
+        # print('Size of data in list format: {0}'.format(len(input_data)))
 
         return input_data
 
     @staticmethod
-    def calculate_entropy(frequency_dict):
-        total_symbols_sum = 0
-        for key in frequency_dict.keys():
-            total_symbols_sum += frequency_dict[key]
+    def calculate_entropy(frequency_dict, mode):
+        if mode != "Markov":
+            total_symbols_sum = 0
+            for key in frequency_dict.keys():
+                total_symbols_sum += frequency_dict[key]
 
-        entropy = 0
+            entropy = 0
 
-        for key in frequency_dict.keys():
-            probability = frequency_dict[key]/total_symbols_sum
-            entropy += probability * math.log(probability,2)
-        return -entropy
+            for key in frequency_dict.keys():
+                probability = frequency_dict[key] / total_symbols_sum
+                entropy += probability * math.log(probability, 2)
+            return -entropy
+        else:
+            dict_of_dicts = {}
+            entropy = 0
+            outer_dict_of_probabilities = {}
+            inner_dict_of_probabilities = {}
+            for key in frequency_dict:
+                dict_of_dicts[key[0]] = {}
+                inner_dict_of_probabilities[key[0]] = {}
+
+            for key in frequency_dict:
+                dict_of_dicts[key[0]][key[1]] = frequency_dict[key]
+                inner_dict_of_probabilities[key[0]][key[1]] = 0
+
+            for key in dict_of_dicts:
+                sum_of_symbols = 0
+                for inner_key in dict_of_dicts[key]:
+                    sum_of_symbols += dict_of_dicts[key][inner_key]
+
+                for inner_key in dict_of_dicts[key]:
+                    inner_dict_of_probabilities[key][inner_key] = dict_of_dicts[key][inner_key] / sum_of_symbols
+
+            total_symbols_sum = 0
+            for key in frequency_dict.keys():
+                total_symbols_sum += frequency_dict[key]
+
+            for key in frequency_dict.keys():
+                outer_dict_of_probabilities[key] = frequency_dict[key]/total_symbols_sum
+
+            for key in frequency_dict.keys():
+                entropy += outer_dict_of_probabilities[key] * math.log(inner_dict_of_probabilities[key[0]][key[1]], 2)
+
+            return -entropy
 
     @staticmethod
     def calculate_average_code_length(frequency_dict, compress_dict):
@@ -45,11 +78,9 @@ class Encoder:
         average_code_length = 0
 
         for key in frequency_dict.keys():
-            probability = frequency_dict[key]/total_symbols_sum
+            probability = frequency_dict[key] / total_symbols_sum
             average_code_length += probability * len(compress_dict[key])
         return average_code_length
-
-
 
     @staticmethod
     def calculate_frequencies(input_data, mode):
@@ -116,7 +147,7 @@ class Encoder:
         elif mode == '2-value':
             encoded_text = ""
             for iter in range(0, len(input_data), 2):
-                encoded_text += compress_dictionary[(input_data[iter],input_data[iter+1])]
+                encoded_text += compress_dictionary[(input_data[iter], input_data[iter + 1])]
             return encoded_text
         elif mode == 'Markov':
             encoded_text = ""
@@ -124,7 +155,7 @@ class Encoder:
                 if iter == 0:
                     encoded_text += compress_dictionary[(None, input_data[iter])]
                 else:
-                    encoded_text += compress_dictionary[(input_data[iter-1], input_data[iter])]
+                    encoded_text += compress_dictionary[(input_data[iter - 1], input_data[iter])]
             return encoded_text
         return
 
@@ -159,24 +190,25 @@ class Encoder:
             return decoded
         elif mode == 'Markov':
             decoded = []
-            decoded.append(decompress_dictionary[(None,'')])
-            previous_symbol = decompress_dictionary[(None,'')]
+            decoded.append(decompress_dictionary[(None, '')])
+            previous_symbol = decompress_dictionary[(None, '')]
             code = ""
             for char in input_data:
                 while True:
-                    if (previous_symbol,'') in decompress_dictionary:
+                    if (previous_symbol, '') in decompress_dictionary:
                         decoded.append(decompress_dictionary[(previous_symbol, '')])
                         previous_symbol = decompress_dictionary[(previous_symbol, '')]
                     else:
                         break
                 code += char
-                if (previous_symbol,code) in decompress_dictionary:
-                    new_symbol = decompress_dictionary[(previous_symbol,code)]
+                if (previous_symbol, code) in decompress_dictionary:
+                    new_symbol = decompress_dictionary[(previous_symbol, code)]
                     decoded.append(new_symbol)
-                    previous_symbol=new_symbol
+                    previous_symbol = new_symbol
                     code = ""
             return decoded
         return
+
 
 # This test passes if module is called directly. If module is imported elsewhere this code won't be executed.
 if __name__ == '__main__':
@@ -189,9 +221,9 @@ if __name__ == '__main__':
     frequency_dict = Encoder.calculate_frequencies(input_data, "Markov")
     print(frequency_dict)
 
-    #encoded_data = Encoder.encode(input_data, frequency_dict, "Markov")
+    # encoded_data = Encoder.encode(input_data, frequency_dict, "Markov")
 
-    #if Encoder.decode(encoded_data, frequency_dict, "Markov") == input_data:
+    # if Encoder.decode(encoded_data, frequency_dict, "Markov") == input_data:
     #    print('Success')
-    #else:
+    # else:
     #    print('No success')

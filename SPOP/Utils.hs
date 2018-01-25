@@ -6,10 +6,7 @@ import System.IO
 data InputData = InputData { rows:: String
                            , cols:: String
                            , pairs:: String
-                           }
-                           
-data IntPair = IntPair { first:: Int
-                       , second:: Int} deriving (Show) 
+                           }     
                            
 printInputData :: InputData -> IO ()
 printInputData (InputData a b c) = do 
@@ -22,9 +19,9 @@ printPairData (IntPair a b) = do
  print (b)
  return() 
  
-arrayToPair :: [Int] -> [IntPair]
+arrayToPair :: [Int] -> [(Int, Int)]
 arrayToPair [] = []
-arrayToPair (x1:x2:xs) = (IntPair x1 x2) : (arrayToPair xs)
+arrayToPair (x1:x2:xs) = (x1, x2) : (arrayToPair xs)
  
 parseToInt :: String -> [Int]
 parseToInt s = do
@@ -32,7 +29,7 @@ parseToInt s = do
  ret <- map read $ words rw :: [Int]
  return ret
  
-parseToPairs :: String -> [IntPair]
+parseToPairs :: String -> [(Int, Int)]
 parseToPairs s = do
  let rw = [ x | x <- s, not (x `elem` ",[]()") ]
  let intArray = map read $ words rw :: [Int]

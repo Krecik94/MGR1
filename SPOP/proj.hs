@@ -8,5 +8,6 @@ run = do
  let row = parseToInt (rows info)
  let col = parseToInt (cols info)
  let pair = parseToPairs (pairs info)
+ print pair
  return ()
  

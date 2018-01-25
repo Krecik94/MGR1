@@ -11,7 +11,7 @@ run = do
  let pair = parseToPairs (pairs info)
  let board = make2dArray (length row) (length col) pair 0
  print board
- testPrint board row
+ testPrint board col row
  return ()
  
 main = do

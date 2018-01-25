@@ -47,6 +47,26 @@ value input_list = do
  x <- ListT (return input_list)
  lift (putStr . show $ x)
  
+--valueOther input_board input_row = do
+-- x <- ListT (return input_row)
+-- --y <- ListT (return input_board)
+-- lift (putStr . show $ x)
+-- lift (putStr (head input_board))
+-- lift (putStrLn "")
+
+valueOther [] [] = do
+ let nothing = 0
+ lift (putStr "")
+ 
+valueOther (x:xs) (y:ys) = do
+ --x <- ListT (return ys)
+ --y <- ListT (return input_board)
+ lift (putStr . show $ y)
+ lift (putStr x)
+ lift (putStrLn "")
+ valueOther xs ys
+ 
+ 
 getInputData :: IO InputData
 getInputData = do
  fname <- getLine
@@ -61,9 +81,13 @@ getInputData = do
 
 
  
-testPrint table row = do
+testPrint board col row = do
  putStrLn "TEST"
  print row
  putStr " "
- runListT (value row)
+ runListT (value col)
+ putStrLn ""
+ runListT (valueOther board row)
+
+
  

@@ -1,7 +1,11 @@
 module Utils 
  where
+
+import Control.Monad.Trans
+import Control.Monad.Trans.List
  
 import System.IO
+import Data.List
  
 data InputData = InputData { rows:: String
                            , cols:: String
@@ -39,6 +43,10 @@ parseToPairs s = do
  ret <- arrayToPair intArray
  return ret
 
+value input_list = do
+ x <- ListT (return input_list)
+ lift (putStr . show $ x)
+ 
 getInputData :: IO InputData
 getInputData = do
  fname <- getLine
@@ -49,3 +57,13 @@ getInputData = do
  pairs <- hGetLine handle
  hClose handle
  return (InputData rows cols pairs)
+
+
+
+ 
+testPrint table row = do
+ putStrLn "TEST"
+ print row
+ putStr " "
+ runListT (value row)
+ 

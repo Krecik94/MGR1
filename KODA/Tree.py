@@ -4,6 +4,7 @@ import numpy
 import cv2
 from functools import total_ordering
 
+
 @total_ordering
 class HeapNode:
     def __init__(self, char, freq):
@@ -70,22 +71,43 @@ class Tree:
         code = ""
         self._create_code_recursive(root, code)
 
-    def create_codes(self, dict_freqencies):
+    def make_Markov(self, frequency_dict):
+        dict_of_dicts = {}
+        output_compress_dict = {}
+        output_decompress_dict = {}
+        for key in frequency_dict:
+            dict_of_dicts[key[0]] = {}
+
+        for key in frequency_dict:
+            dict_of_dicts[key[0]][key[1]] = frequency_dict[key]
+
+        for key in dict_of_dicts:
+            HuffmanTree = Tree()
+            (compressDictionary, decompressDictionary) = HuffmanTree.create_codes(dict_of_dicts[key], '1-value')
+            for second_key in compressDictionary:
+                output_compress_dict[(key, second_key)] = compressDictionary[second_key]
+                output_decompress_dict[(key, compressDictionary[second_key])] = second_key
+
+        return (output_compress_dict, output_decompress_dict)
+
+    def create_codes(self, dict_freqencies, mode):
         """
         Returns Tuple with 2 dictionaries. First
         :param dict_freqencies:
         :return:
         """
-        self._make_heap(dict_freqencies)
-        self._merge_nodes()
-        self._start_create_codes()
+        if mode in ["1-value", "2-value"]:
+            self._make_heap(dict_freqencies)
+            self._merge_nodes()
+            self._start_create_codes()
 
-        return (self.compress_dictionary, self.decompress_dictionary)
+            return (self.compress_dictionary, self.decompress_dictionary)
+        if mode == "Markov":
+            return self.make_Markov(dict_freqencies)
 
     def print_codes(self):
         for code in self.compress_dictionary:
             print("Compressed code {} Normal code {}\n".format(self.compress_dictionary[code], code))
-
 
 
 if __name__ == '__main__':
@@ -101,5 +123,3 @@ if __name__ == '__main__':
     freqencies[255] = 1
     HuffmanTree.create_codes(freqencies)
     HuffmanTree.print_codes()
-
-

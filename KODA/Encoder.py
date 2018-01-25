@@ -159,11 +159,21 @@ class Encoder:
             return decoded
         elif mode == 'Markov':
             decoded = []
+            decoded.append(decompress_dictionary[(None,'')])
+            previous_symbol = decompress_dictionary[(None,'')]
             code = ""
             for char in input_data:
+                while True:
+                    if (previous_symbol,'') in decompress_dictionary:
+                        decoded.append(decompress_dictionary[(previous_symbol, '')])
+                        previous_symbol = decompress_dictionary[(previous_symbol, '')]
+                    else:
+                        break
                 code += char
-                if code in decompress_dictionary:
-                    decoded.append(decompress_dictionary[code][1])
+                if (previous_symbol,code) in decompress_dictionary:
+                    new_symbol = decompress_dictionary[(previous_symbol,code)]
+                    decoded.append(new_symbol)
+                    previous_symbol=new_symbol
                     code = ""
             return decoded
         return

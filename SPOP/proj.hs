@@ -14,9 +14,11 @@ run = do
  testPrint board col row
  let newerBoard = testFunc board row col
  let newestBoard = testFunc newerBoard row col
+ let newestBoardA = testFunc newestBoard row col
  
  testPrint newerBoard col row
  testPrint newestBoard col row
+ testPrint newestBoardA col row
  return ()
  
 main = do

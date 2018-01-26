@@ -154,6 +154,7 @@ value input_list = do
 -- function to print board on screen
 testPrint board col row = do
  putStrLn ""
+ putStr " "
  runListT (value col)
  putStrLn ""
  runListT (valueOther board row)

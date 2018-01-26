@@ -12,6 +12,8 @@ run = do
  let board = make2dArray (length row) (length col) pair row col 0
  print board
  testPrint board col row
+ let newerBoard = testFunc board row col
+ testPrint newerBoard col row
  return ()
  
 main = do

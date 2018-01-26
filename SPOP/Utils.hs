@@ -29,7 +29,7 @@ addRow colNum houses rowGas colGas currRow currCol | ((currRow, currCol) `elem` 
                                                          && not ((currRow, currCol-1) `elem` houses)
                                                          && not ((currRow+1, currCol) `elem` houses)
                                                          && not ((currRow-1, currCol) `elem` houses))= "X" ++ (addRow (colNum-1) houses rowGas colGas currRow (currCol+1))
-                                                   | otherwise                                       = "W" ++ (addRow (colNum-1) houses rowGas colGas currRow (currCol+1))
+                                                   | otherwise                                       = "_" ++ (addRow (colNum-1) houses rowGas colGas currRow (currCol+1))
 
 arrayToPair :: [Int] -> [(Int, Int)]
 arrayToPair [] = []
@@ -52,6 +52,106 @@ value input_list = do
  x <- ListT (return input_list)
  lift (putStr . show $ x)
  
+testFunc :: [[Char]] -> [Int] -> [Int] -> [[Char]]
+testFunc board row col = do
+ let newBoard = checkRow board row
+ let newBoardA = transpose (checkRow (transpose newBoard) col)
+ newBoardB <- iterateOverRows newBoardA newBoardA 0
+ 
+ return newBoardB
+ 
+checkRow :: [[Char]] -> [Int] -> [[Char]]
+checkRow [] _ = []
+checkRow (line:board) (row:rows) | (length (filter (\x  -> x == 'Z') line))== row = (iterateOnElementFill line) : (checkRow board rows)
+                                 | (length (filter (\x  -> x == '_'|| x == 'Z') line))== row = (iterateOnElement line) : (checkRow board rows)
+                                 | otherwise = line : (checkRow board rows)
+
+
+--checCol :: [[Char]] -> [Int] -> [[Char]]
+--checCol [] _ = []
+
+iterateOverRows :: [[Char]] -> [[Char]] -> Int -> [[Char]]
+iterateOverRows _ [] _ = []
+iterateOverRows board  (row:boardA) currRow = (checkHouse board row currRow 0):(iterateOverRows board boardA (currRow+1))
+
+
+iterateOverRowsToFill :: [[Char]] -> [[Char]] -> Int -> [[Char]]
+iterateOverRowsToFill _ [] _ = []
+iterateOverRowsToFill board  (row:boardA) currRow = (checkForBlanks board row currRow 0):(iterateOverRowsToFill board boardA (currRow+1))
+
+
+checkForBlanks _ [] _ _ = []
+
+checkForBlanks board  (row:boardA) currRow currCol | ((currRow > 0 )&&(board!!(currRow-1))!!currCol == 'D') 
+                                                            && (((currRow-1)<=0||(board!!(currRow-2))!!currCol /= '_') 
+                                                                && (currCol<=0||(board!!(currRow-1))!!(currCol-1) /= '_') 
+                                                                && (((currCol+1)>=(length (board!!0)))||(board!!(currRow-1))!!(currCol+1) /= '_'))
+                                                            = 'Z':(checkForBlanks board boardA currRow (currCol+1))
+                                               | ((((currRow +1) < (length board)))&&(board!!(currRow+1))!!currCol == 'D') 
+                                                            && (((((currRow +2) >= (length board)))||(board!!(currRow+2))!!currCol /= '_') 
+                                                                && (currCol<=0||(board!!(currRow+1))!!(currCol-1) /= '_') 
+                                                                && (((currCol+1)>=(length (board!!0)))||(board!!(currRow+1))!!(currCol+1) /= '_')) 
+                                                            = 'Z':(checkForBlanks board boardA currRow (currCol+1))
+                                               | ((currCol > 0 )&&(board!!currRow)!!(currCol-1) == 'D') 
+                                                            && (((currCol-1)<=0||(board!!currRow)!!(currCol-2) /= '_') 
+                                                                && (currRow<=0||(board!!(currRow-1))!!(currCol-1) /= '_') 
+                                                                && (((currRow+1)>=(length board))||(board!!(currRow+1))!!(currCol-1) /= '_'))
+                                                            = 'Z':(checkForBlanks board boardA currRow (currCol+1))
+                                               | ((((currCol +1) < (length (board!!0))))&&(board!!currRow)!!(currCol+1) == 'D') 
+                                                            && (((currCol+2)>=(length (board!!0))||(board!!currRow)!!(currCol+2) /= '_') 
+                                                                && (currRow<=0||(board!!(currRow-1))!!(currCol+1) /= '_') 
+                                                                && (((currRow+1)>=(length board))||(board!!(currRow+1))!!(currCol+1) /= '_'))
+                                                            = 'Z':(checkForBlanks board boardA currRow (currCol+1))             
+                                               | otherwise = row:(checkForBlanks board boardA currRow (currCol+1))
+
+
+checkHouse _ [] _ _ = []
+
+checkHouse board  (row:boardA) currRow currCol | ((currRow > 0 )&&(board!!(currRow-1))!!currCol == 'D') 
+                                                            && (((currRow-1)<=0||(board!!(currRow-2))!!currCol /= '_') 
+                                                                && (currCol<=0||(board!!(currRow-1))!!(currCol-1) /= '_') 
+                                                                && (((currCol+1)>=(length (board!!0)))||(board!!(currRow-1))!!(currCol+1) /= '_'))
+                                                            = 'Z':(checkHouse board boardA currRow (currCol+1))
+                                               | ((((currRow +1) < (length board)))&&(board!!(currRow+1))!!currCol == 'D') 
+                                                            && (((((currRow +2) >= (length board)))||(board!!(currRow+2))!!currCol /= '_') 
+                                                                && (currCol<=0||(board!!(currRow+1))!!(currCol-1) /= '_') 
+                                                                && (((currCol+1)>=(length (board!!0)))||(board!!(currRow+1))!!(currCol+1) /= '_')) 
+                                                            = 'Z':(checkHouse board boardA currRow (currCol+1))
+                                               | ((currCol > 0 )&&(board!!currRow)!!(currCol-1) == 'D') 
+                                                            && (((currCol-1)<=0||(board!!currRow)!!(currCol-2) /= '_') 
+                                                                && (currRow<=0||(board!!(currRow-1))!!(currCol-1) /= '_') 
+                                                                && (((currRow+1)>=(length board))||(board!!(currRow+1))!!(currCol-1) /= '_'))
+                                                            = 'Z':(checkHouse board boardA currRow (currCol+1))
+                                               | ((((currCol +1) < (length (board!!0))))&&(board!!currRow)!!(currCol+1) == 'D') 
+                                                            && (((currCol+2)>=(length (board!!0))||(board!!currRow)!!(currCol+2) /= '_') 
+                                                                && (currRow<=0||(board!!(currRow-1))!!(currCol+1) /= '_') 
+                                                                && (((currRow+1)>=(length board))||(board!!(currRow+1))!!(currCol+1) /= '_'))
+                                                            = 'Z':(checkHouse board boardA currRow (currCol+1))             
+                                               | otherwise = row:(checkHouse board boardA currRow (currCol+1))
+
+
+--checkHouse board  (row:boardA) currRow currCol | ((currRow > 0 )&&(board!!(currRow-1))!!currCol == 'D') && (((currRow-1)<0||(board!!(currRow-2))!!currCol /= '_') && (currCol<0||(board!!(currRow-1))!!(currCol-1) /= '_') && (((currCol+1)>(length board))||(board!!(currRow-1))!!(currCol+1) /= '_')) = 'Z':(checkHouse board boardA currRow (currCol+1))
+--                                               | ((((currRow +1) < (length board)))&&(board!!(currRow+1))!!currCol == 'D') && (((((currRow +2) > (length board)))||(board!!(currRow-2))!!currCol /= '_') && (currCol<0||(board!!(currRow+1))!!(currCol-1) /= '_') && (((currCol+1)>(length board))||(board!!(currRow+1))!!(currCol+1) /= '_')) = 'Z':(checkHouse board boardA currRow (currCol+1))
+--                                               | otherwise = row:(checkHouse board boardA currRow (currCol+1))
+
+
+countLetters :: String -> Char -> Int
+countLetters str c = length $ filter (== c) str
+
+iterateOnElementFill :: [Char] -> [Char]
+iterateOnElementFill [] = []
+iterateOnElementFill (l:line) | l == '_' = 'X':(iterateOnElementFill line)
+                          | otherwise = l:(iterateOnElementFill line)
+
+
+iterateOnElement :: [Char] -> [Char]
+iterateOnElement [] = []
+iterateOnElement (l:line) | l == '_' = 'Z':(iterateOnElement line)
+                          | otherwise = l:(iterateOnElement line)
+
+
+--((countLetters line '_') + (countLetters line '_'))
+--(length (filter (\x  -> x == "_"|| x == "Z") line))
 --valueOther input_board input_row = do
 -- x <- ListT (return input_row)
 -- --y <- ListT (return input_board)

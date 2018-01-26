@@ -83,7 +83,15 @@ checkForBlanks board  (row:boardA) currRow currCol | (row=='_' &&(currRow > 0 )&
                                                | (row=='_' &&(currCol > 0 )&&(board!!currRow)!!(currCol-1) == 'Z') 
                                                             = 'X':(checkForBlanks board boardA currRow (currCol+1))
                                                | (row=='_' &&(((currCol +1) < (length (board!!0))))&&(board!!currRow)!!(currCol+1) == 'Z') 
-                                                            = 'X':(checkForBlanks board boardA currRow (currCol+1))             
+                                                            = 'X':(checkForBlanks board boardA currRow (currCol+1))         
+                                               | (row=='_' &&(((currCol +1) < (length (board!!0)))&&((currRow +1) < (length board)))&&(board!!(currRow+1))!!(currCol+1) == 'Z') 
+                                                            = 'X':(checkForBlanks board boardA currRow (currCol+1))  
+                                               | (row=='_' &&(((currCol +1) < (length (board!!0))) && (currRow > 0 ))&&(board!!(currRow-1))!!(currCol+1) == 'Z') 
+                                                            = 'X':(checkForBlanks board boardA currRow (currCol+1))  
+                                               | (row=='_' &&(((currCol > 0 )) && (currRow > 0 ) )&&(board!!(currRow-1))!!(currCol-1) == 'Z') 
+                                                            = 'X':(checkForBlanks board boardA currRow (currCol+1))  
+                                               | (row=='_' &&(((currCol > 0 ))&&((currRow +1) < (length board)))&&(board!!(currRow+1))!!(currCol-1) == 'Z') 
+                                                            = 'X':(checkForBlanks board boardA currRow (currCol+1))                                                              
                                                | otherwise = row:(checkForBlanks board boardA currRow (currCol+1))
 
 

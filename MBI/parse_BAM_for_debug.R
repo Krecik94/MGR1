@@ -5,8 +5,8 @@
 # load the library
 library(Rsamtools)
 
-# A function to read bam file
 
+# A function to read bam file
 readBAM <- function(bamFile){
   
   bam <- scanBam(bamFile)

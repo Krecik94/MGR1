@@ -12,11 +12,14 @@ fluidPage(
     sidebarPanel(
       
       # Input: Slider for the number of bins ----
-      sliderInput(inputId = "bins",
-                  label = "Number of bins:",
-                  min = 1,
-                  max = 50,
-                  value = 30)
+      numericInput(inputId = "rangeStart",
+                  label = "Range start:",
+                  value = 10000),
+      numericInput(inputId = "rangeEnd",
+                   label = "Range end:",
+                   value = 15000),
+      actionButton(inputId = "button",
+                   label = "Button")
       
     ),
     
@@ -24,9 +27,10 @@ fluidPage(
     mainPanel(
       
       # Output: Histogram ----
-      plotOutput(outputId = "distPlot"),
-      
-      plotOutput(outputId = "distPlot2")
+      #plotOutput(outputId = "distPlot"),
+      textOutput(outputId = "sequence1"),
+      textOutput(outputId = "sequence2")
+      #plotOutput(outputId = "distPlot2")
       
     )
   )

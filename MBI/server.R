@@ -1,4 +1,5 @@
 library(shiny)
+library(GenomicAlignments)
 source("test_BAM_load.R")
 
 function(input, output) {
@@ -13,19 +14,58 @@ function(input, output) {
   # 1. It is "reactive" and therefore should be automatically
   #    re-executed when inputs (input$bins) change
   # 2. Its output type is a plot
-  output$distPlot <- renderPlot({
+  
+  
+  #output$distPlot <- renderPlot({
+  #  
+  #  x    <- faithful$waiting
+  #  bins <- seq(min(x), max(x), length.out = input$bins + 1)
+  #  
+  #  hist(x, breaks = bins, col = "#75AADB", border = "white",
+  #       xlab = "Waiting time to next eruption (in mins)",
+  #       main = "Histogram of waiting times")
+  #  
+  #})
+  
+  bf <- BamFile("wgEncodeUwRepliSeqMcf7S1AlnRep1.bam")
+  
+  gr <- GRanges("chr1",IRanges(10499500, 14933500))
+  
+  reads <- scanBam(bf, param=ScanBamParam(what=c("rname", "seq", "pos"), which=gr))
+  #BAM = readBAM("wgEncodeUwRepliSeqMcf7S1AlnRep1.bam")
+  
+  #gal <- readGAlignments("wgEncodeUwRepliSeqMcf7S1AlnRep1.bam", param = ScanBamParam(which = GRanges("chr1",IRanges(143500,154500))))
+  
+  #test <- gal$start
+  #print(class(reads))
+  #single_stirng <- reads$`chr1:10499500-14933500`$seq[1]
+  #print(class(single_stirng))
+  #print(toString(single_stirng))
+  
+  #output$sequence1 <- renderText({if(input$button == 1)
+  #  {input$rangeStart}})
+  
+
+  observeEvent(input$button, {
+    #print(toString(single_stirng))
     
-    x    <- faithful$waiting
-    bins <- seq(min(x), max(x), length.out = input$bins + 1)
-    
-    hist(x, breaks = bins, col = "#75AADB", border = "white",
-         xlab = "Waiting time to next eruption (in mins)",
-         main = "Histogram of waiting times")
-    
+    #print(toString(single_stirng))
+    gr <- GRanges("chr1",IRanges(input$rangeStart, input$rangeEnd))
+    #print(toString(single_stirng))
+    reads <- scanBam(bf, param=ScanBamParam(what=c("rname", "seq", "pos"), which=gr))
+    #print(toString(single_stirng))
+    print(input$rangeStart)
+    print(input$rangeEnd)
+    single_stirng <- reads$`chr1:10499500-14933500`$seq[1]
+    print(toString(single_stirng))
+    output$sequence1 <- renderText(toString(single_stirng))
   })
   
-  BAM = readBAM("wgEncodeUwRepliSeqBg02esG1bAlnRep1.bam")
+
   
-  print(BAM)
+  #getSeq(gal)
+  #print(gal)
+  #print(mcols(BAM)$seq)
+  #print (BAM$seq)
   
 }

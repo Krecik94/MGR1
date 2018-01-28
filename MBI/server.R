@@ -27,7 +27,7 @@ function(input, output) {
   #  
   #})
   
-  bf <- BamFile("wgEncodeUwRepliSeqMcf7S1AlnRep1.bam")
+  bf <- BamFile("wgEncodeUwRepliSeqBg02esG1bAlnRep1.bam")
   
   gr <- GRanges("chr1",IRanges(10499500, 14933500))
   
@@ -54,9 +54,9 @@ function(input, output) {
     #print(toString(single_stirng))
     reads <- scanBam(bf, param=ScanBamParam(what=c("rname", "seq", "pos"), which=gr))
     #print(toString(single_stirng))
-    print(input$rangeStart)
-    print(input$rangeEnd)
-    single_stirng <- reads$`chr1:10499500-14933500`$seq[1]
+    names(reads) <- "val"
+    print(reads)
+    single_stirng <-reads$val$seq[1]
     print(toString(single_stirng))
     output$sequence1 <- renderText(toString(single_stirng))
   })

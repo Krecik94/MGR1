@@ -14,8 +14,11 @@ function(input, output) {
   
   
   # Reading input files
-  input_file_1 <- BamFile("wgEncodeUwRepliSeqMcf7S1AlnRep1.bam")
-  input_file_2 <- BamFile("wgEncodeUwRepliSeqMcf7S2AlnRep1.bam")
+  input_file_1 <- BamFile("wgEncodeUwRepliSeqBg02esG1bAlnRep1.bam")
+  input_file_2 <- BamFile("wgEncodeUwRepliSeqBg02esG2AlnRep1.bam")
+  
+  BAM1 = readBAM("wgEncodeUwRepliSeqBg02esG1bAlnRep1.bam")
+  BAM2 = readBAM("wgEncodeUwRepliSeqBg02esG2AlnRep1.bam")
   
 
   # Defining action on button press
@@ -41,6 +44,22 @@ function(input, output) {
     # Assigning values to output fields
     output$sequence1 <- renderText(toString(first_string_1))
     output$sequence2 <- renderText(toString(first_string_2))
+  })
+  
+  output$coverage_plot <- renderPlot({
+    chr1 <- BAM1[BAM1$rname == input$name,'pos']
+    chr2 <- BAM2[BAM2$rname == input$name,'pos']
+    
+    chr1_density = density(chr1)
+    chr2_density = density(chr2)
+    
+    plot(chr1_density,
+         ylim = range(c(chr1_density$y, chr2_density$y)),
+         main = paste("Coverage plot of chromosome",input$name,sep=" "),
+         xlab = input$name,
+         col = 'blue',
+         lwd=2.5)
+    lines(chr2_density, lwd=2.5, col = 'red')
   })
   
 }

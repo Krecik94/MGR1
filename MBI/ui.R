@@ -34,7 +34,9 @@ fluidPage(
       # Sequence from 1st BAM file
       textOutput(outputId = "sequence1"),
       # Sequence from 2nd BAM file
-      textOutput(outputId = "sequence2")
+      textOutput(outputId = "sequence2"),
+      
+      plotOutput("coverage_plot")
     )
   )
 )

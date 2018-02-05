@@ -12,4 +12,4 @@ Saved
 *.suo
 *.xcodeproj
 *.xcworkspace
-PGK\ProjektKoncowy\Content\StarterContent\*
+/PGK/ProjektKoncowy/Content/StarterContent/*

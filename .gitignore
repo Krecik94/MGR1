@@ -13,3 +13,7 @@ Saved
 *.xcodeproj
 *.xcworkspace
 /PGK/ProjektKoncowy/Content/StarterContent/*
+/PGK/ProjektKoncowy/Content/Geometry/*
+/PGK/ProjektKoncowy/Content/Mannequin/*
+/PGK/ProjektKoncowy/Content/ThirdPerson/*
+/PGK/ProjektKoncowy/Content/ThirdPersonBP/*

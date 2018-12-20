@@ -2,4 +2,5 @@
 __pycache__
 text8
 deps.words
-.jpg
+*.jpg
+/SNR/obrazki/*

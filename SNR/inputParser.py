@@ -73,7 +73,7 @@ def make_one_big_output_file():
     dirname_list = list(dirname_set)
     dirname_list = sorted(dirname_list)
 
-    with open(os.path.join('obrazki', 'Test_output_all.csv'), 'w') as big_file:
+    with open(os.path.join('obrazki', 'Training_output_all.csv'), 'w') as big_file:
         for dirpath, dirnames, filenames in os.walk('obrazki\\fruits-360\\Training'):
             print(dirpath)
             for f in filenames:

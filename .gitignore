@@ -4,3 +4,4 @@ text8
 deps.words
 *.jpg
 /SNR/obrazki/*
+/SNR/backup/*

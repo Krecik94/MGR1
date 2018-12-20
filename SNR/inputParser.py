@@ -39,7 +39,7 @@ def check_csvs():
 
 
 def make_csvs_one_line():
-    for dirpath, dirnames, filenames in os.walk('obrazki\\fruits-360\\Test'):
+    for dirpath, dirnames, filenames in os.walk('obrazki\\fruits-360\\Training'):
 
         print(dirpath)
         for f in filenames:
@@ -51,5 +51,18 @@ def make_csvs_one_line():
                     file.write(content_one_line)
 
 
+def make_one_big_file():
+    with open(os.path.join('obrazki', 'Test_all.csv'), 'w') as big_file:
+        for dirpath, dirnames, filenames in os.walk('obrazki\\fruits-360\\Test'):
+                print(dirpath)
+                for f in filenames:
+                    if f.endswith('.csv'):
+                        with open(os.path.join(dirpath, f), 'r') as file:
+                            content = file.read()
+                            content_one_line = content.replace('\n', ',')
+                            content_one_line = content_one_line[:-1]
+                            big_file.write(content_one_line)
+                            big_file.write('\n')
+
 if __name__ == '__main__':
-    check_csvs()
+    make_one_big_file()

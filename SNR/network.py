@@ -6,14 +6,14 @@ from sklearn.metrics import confusion_matrix, f1_score
 
 def main():
     # Data used for training
-    test_input_data = pd.read_csv('obrazki\\Test_all.csv', header=None)
+    test_input_data = pd.read_csv('obrazki\\Test_all.csv', header=None, nrows=1000)
     print('loaded test_input_data')
-    test_output_data = pd.read_csv('obrazki\\Test_output_all.csv', header=None)
+    test_output_data = pd.read_csv('obrazki\\Test_output_all.csv', header=None, nrows=1000)
     print('loaded test_output_data')
 
-    training_input_data = pd.read_csv('obrazki\\Test_all.csv', header=None)
+    training_input_data = pd.read_csv('obrazki\\Test_all.csv', header=None, nrows=1000)
     print('loaded training_input_data')
-    training_output_data = pd.read_csv('obrazki\\Test_output_all.csv', header=None)
+    training_output_data = pd.read_csv('obrazki\\Test_output_all.csv', header=None, nrows=1000)
     print('loaded training_output_data')
 
     print(test_input_data)
@@ -22,10 +22,10 @@ def main():
 
     # creating model
     network_model = Sequential()
-    network_model.add(Dense(5000, activation='relu', input_shape=(10000,)))
+    network_model.add(Dense(100, activation='relu', input_shape=(10000,)))
 
     # Add one hidden layer
-    network_model.add(Dense(500, activation='relu'))
+    #network_model.add(Dense(500, activation='relu'))
     # Add one hidden layer
     network_model.add(Dense(100, activation='relu'))
 
@@ -45,7 +45,7 @@ def main():
 
     y_pred = network_model.predict(test_input_data)
     print(network_model.evaluate(test_input_data, test_output_data, batch_size=20, verbose=1))
-
+    print(network_model.metrics_names)
     # Confusion matrix
     print("Confusion matrix :\n", confusion_matrix(test_output_data.argmax(axis=1), y_pred.argmax(axis=1)))
 

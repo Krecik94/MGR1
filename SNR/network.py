@@ -6,14 +6,14 @@ from sklearn.metrics import confusion_matrix, f1_score
 
 def main():
     # Data used for training
-    test_input_data = pd.read_csv('obrazki\\Test_all.csv', header=None, nrows=1000)
+    test_input_data = pd.read_csv('obrazki\\Test_all.csv', header=None)
     print('loaded test_input_data')
-    test_output_data = pd.read_csv('obrazki\\Test_output_all.csv', header=None, nrows=1000)
+    test_output_data = pd.read_csv('obrazki\\Test_output_all.csv', header=None)
     print('loaded test_output_data')
 
-    training_input_data = pd.read_csv('obrazki\\Test_all.csv', header=None, nrows=1000)
+    training_input_data = pd.read_csv('obrazki\\Training_all.csv', header=None)
     print('loaded training_input_data')
-    training_output_data = pd.read_csv('obrazki\\Test_output_all.csv', header=None, nrows=1000)
+    training_output_data = pd.read_csv('obrazki\\Training_output_all.csv', header=None)
     print('loaded training_output_data')
 
     print(test_input_data)
@@ -44,13 +44,15 @@ def main():
     print('finished training')
 
     y_pred = network_model.predict(test_input_data)
+    print('evaluating')
     print(network_model.evaluate(test_input_data, test_output_data, batch_size=20, verbose=1))
+    print('evaluating finished')
     print(network_model.metrics_names)
     # Confusion matrix
-    print("Confusion matrix :\n", confusion_matrix(test_output_data.argmax(axis=1), y_pred.argmax(axis=1)))
+    #print("Confusion matrix :\n", confusion_matrix(test_output_data.argmax(axis=1), y_pred.argmax(axis=1)))
 
     # F1 score
-    print("F1 :", f1_score(test_output_data.argmax(axis=1), y_pred.argmax(axis=1), average='micro'))
+    #print("F1 :", f1_score(test_output_data.argmax(axis=1), y_pred.argmax(axis=1), average='micro'))
 
 
 if __name__ == '__main__':

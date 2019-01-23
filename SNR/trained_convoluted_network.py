@@ -32,7 +32,7 @@ def main():
     model.add(layers.Flatten())
     model.add(layers.Dense(1024, activation='relu'))
     model.add(layers.Dropout(0.5))
-    model.add(layers.Dense(87, activation='softmax'))
+    model.add(layers.Dense(95, activation='softmax'))
 
     train_datagen = ImageDataGenerator(
         rescale=1. / 255,
@@ -42,7 +42,7 @@ def main():
         horizontal_flip=True,
         fill_mode='nearest')
 
-    train_batchsize = 100
+    train_batchsize = 50
     val_batchsize = 10
 
     train_generator = train_datagen.flow_from_directory(
@@ -61,6 +61,25 @@ def main():
         steps_per_epoch=train_generator.samples / train_generator.batch_size,
         epochs=30,
         verbose=1)
+
+    # serialize model to JSON
+    model_json = model.to_json()
+    with open("model.json", "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save('augmentation_trained_30_epochs.h5')
+    print("Saved model to disk")
+
+    # # load json and create model
+    # json_file = open('model.json', 'r')
+    # loaded_model_json = json_file.read()
+    # json_file.close()
+    # loaded_model = model_from_json(loaded_model_json)
+    # # load weights into new model
+    # loaded_model.load_weights("model.h5")
+    # print("Loaded model from disk")
+
+
 
     '''
     # load an image from file

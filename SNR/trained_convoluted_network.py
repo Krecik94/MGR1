@@ -18,7 +18,7 @@ from keras import optimizers
 def main():
 
     # load the model
-    pretrained_model = VGG16(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+    pretrained_model = VGG16(weights='imagenet', include_top=False, input_shape=(100, 100, 3))
 
 
     for layer in pretrained_model.layers[:-4]:

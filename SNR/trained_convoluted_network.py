@@ -14,6 +14,7 @@ from keras import models
 from keras import layers
 from keras import optimizers
 
+
 def main():
 
     # load the model
@@ -42,14 +43,23 @@ def main():
         horizontal_flip=True,
         fill_mode='nearest')
 
+    validation_datagen = ImageDataGenerator(rescale=1. / 255)
+
     train_batchsize = 50
-    val_batchsize = 10
+    val_batchsize = 50
 
     train_generator = train_datagen.flow_from_directory(
         'obrazki//fruits-360//Training//',
-        target_size=(224, 224),
+        target_size=(100, 100),
         batch_size=train_batchsize,
         class_mode='categorical')
+
+    validation_generator = validation_datagen.flow_from_directory(
+        'obrazki//fruits-360//Training//',
+        target_size=(100, 100),
+        batch_size=val_batchsize,
+        class_mode='categorical',
+        shuffle=False)
 
     # Compile the model
     model.compile(loss='categorical_crossentropy',
@@ -59,7 +69,9 @@ def main():
     history = model.fit_generator(
         train_generator,
         steps_per_epoch=train_generator.samples / train_generator.batch_size,
-        epochs=30,
+        epochs=5,
+        validation_data=validation_generator,
+        validation_steps=validation_generator.samples/validation_generator.batch_size,
         verbose=1)
 
     # serialize model to JSON
@@ -67,7 +79,7 @@ def main():
     with open("model.json", "w") as json_file:
         json_file.write(model_json)
     # serialize weights to HDF5
-    model.save('augmentation_trained_30_epochs.h5')
+    model.save('augmentation_trained_5_epochs_100x100.h5')
     print("Saved model to disk")
 
     # # load json and create model

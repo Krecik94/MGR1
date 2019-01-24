@@ -55,7 +55,7 @@ def main():
         class_mode='categorical')
 
     validation_generator = validation_datagen.flow_from_directory(
-        'obrazki//fruits-360//Training//',
+        'obrazki//fruits-360//Test//',
         target_size=(100, 100),
         batch_size=val_batchsize,
         class_mode='categorical',

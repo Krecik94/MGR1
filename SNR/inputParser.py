@@ -89,5 +89,24 @@ def make_one_big_output_file():
                     big_file.write('\n')
 
 
+def make_one_big_output_file_svm():
+    dirname_set = set()
+    for dirpath, dirnames, filenames in os.walk('obrazki\\fruits-360\\Training'):
+        for dirname in dirnames:
+            dirname_set.add(dirname)
+    dirname_list = list(dirname_set)
+    dirname_list = sorted(dirname_list)
+
+    with open(os.path.join('obrazki', 'Test_output_all.csv'), 'w') as big_file:
+        for dirpath, dirnames, filenames in os.walk('obrazki\\fruits-360\\Test'):
+            print(dirpath)
+            string_to_write = ''
+            for f in filenames:
+                if f.endswith('.jpg'):
+                    string_to_write+=str(dirname_list.index(os.path.basename(dirpath)))
+                    string_to_write+=','
+            big_file.write(string_to_write)
+
+
 if __name__ == '__main__':
-    make_one_big_output_file()
+    make_one_big_output_file_svm()

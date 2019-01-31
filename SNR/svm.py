@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 from joblib import dump, load
-from sklearn import svm
+from sklearn import svm, preprocessing
 from keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 from keras.applications.vgg16 import VGG16
 
@@ -25,7 +25,7 @@ def main():
     val_batchsize = 50
 
     train_generator = train_datagen.flow_from_directory(
-        'obrazki//fruits-360//Training//',
+        'obrazki//fruits-360//Test//',
         target_size=(100, 100),
         batch_size=train_batchsize,
         class_mode='categorical')
@@ -47,14 +47,20 @@ def main():
 
     feature_list_np = np.array(features_list)
 
-    training_output_data = pd.read_csv('obrazki\\Training_output_all.csv', header=None)
+    training_output_data = pd.read_csv('obrazki\\Test_output_all.csv', header=None)
 
     training_output_np = np.array(training_output_data).flatten()
 
-    clf = svm.SVC(gamma='scale', decision_function_shape='ovo')
-    clf.fit(feature_list_np, training_output_np)
+    scaler = preprocessing.StandardScaler()
+    scaled_feature_list_np = scaler.fit_transform(feature_list_np)
 
-    dump(clf, 'svm_model.joblib')
+    clf = svm.SVC(gamma='auto', decision_function_shape='ovo', kernel='poly', degree=5, verbose=1, cache_size=5000,
+                  tol=0.001, C=1, class_weight='balanced')
+    clf.fit(scaled_feature_list_np, training_output_np)
+
+    print(clf.score(scaled_feature_list_np, training_output_np))
+
+    dump(clf, 'svm_model_d5.joblib')
 
     # load an image from file
     image = load_img('obrazki//fruits-360//Training//Tomato Maroon//2_100.jpg', target_size=(100, 100))
@@ -69,8 +75,9 @@ def main():
 
     feature1 = model.predict_generator(img_generator, verbose=1)
     feature1_np = np.array(feature1).flatten()
+    scaled_feature1_np = scaler.fit_transform([feature1_np])
 
-    print(clf.predict(feature1_np[0]))
+    print(clf.predict(scaled_feature1_np))
 
 
 if __name__ == '__main__':

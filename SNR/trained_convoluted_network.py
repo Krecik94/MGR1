@@ -14,12 +14,12 @@ from keras import models
 from keras import layers
 from keras import optimizers
 
+import matplotlib.pyplot as plt
+
 
 def main():
-
     # load the model
     pretrained_model = VGG16(weights='imagenet', include_top=False, input_shape=(100, 100, 3))
-
 
     for layer in pretrained_model.layers[:-4]:
         layer.trainable = False
@@ -65,22 +65,46 @@ def main():
     model.compile(loss='categorical_crossentropy',
                   optimizer=optimizers.RMSprop(lr=1e-4),
                   metrics=['acc'])
+
+    # Early stop
+    earlyStopCallback = keras.callbacks.EarlyStopping(monitor='val_loss',
+                                                      min_delta=0,
+                                                      patience=0,
+                                                      verbose=1, mode='auto')
+
     # Train the model
     history = model.fit_generator(
         train_generator,
         steps_per_epoch=train_generator.samples / train_generator.batch_size,
         epochs=5,
         validation_data=validation_generator,
-        validation_steps=validation_generator.samples/validation_generator.batch_size,
-        verbose=1)
+        validation_steps=validation_generator.samples / validation_generator.batch_size,
+        verbose=1,
+        callbacks=[earlyStopCallback])
 
     # serialize model to JSON
-    model_json = model.to_json()
-    with open("model.json", "w") as json_file:
-        json_file.write(model_json)
-    # serialize weights to HDF5
-    model.save('augmentation_trained_5_epochs_100x100.h5')
-    print("Saved model to disk")
+    # model_json = model.to_json()
+    # with open("model.json", "w") as json_file:
+    #     json_file.write(model_json)
+    # # serialize weights to HDF5
+    # model.save('augmentation_trained_5_epochs_100x100.h5')
+    # print("Saved model to disk")
+
+    plt.plot(history.history['acc'])
+    plt.plot(history.history['val_acc'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
+    # summarize history for loss
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
 
     # # load json and create model
     # json_file = open('model.json', 'r')
@@ -90,8 +114,6 @@ def main():
     # # load weights into new model
     # loaded_model.load_weights("model.h5")
     # print("Loaded model from disk")
-
-
 
     '''
     # load an image from file
@@ -112,11 +134,6 @@ def main():
     print('%s (%.2f%%)' % (label[1], label[2] * 100))
 
     '''
-
-
-
-
-
 
     '''
     # picking ranodm number of rows from the data file

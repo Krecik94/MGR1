@@ -1,5 +1,6 @@
 from joblib import dump, load
 import numpy as np
+from svm import preprocessing
 from keras.applications import VGG16
 from keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
 
@@ -44,9 +45,12 @@ def main():
 
     feature_list_np = np.array(features_list)
 
+    scaler = preprocessing.StandardScaler()
+    scaled_feature_list_np = scaler.fit_transform(feature_list_np)
+
     clf = load("svm_model.joblib")
 
-    print(clf.predict(feature_list_np))
+    print(clf.predict(scaled_feature_list_np))
 
 
 
